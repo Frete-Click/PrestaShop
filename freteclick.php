@@ -385,10 +385,8 @@ class freteclick extends CarrierModule
     $smarty->assign('arrCityDestination', $this->listCityDestination());
     $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
     $smarty->assign('cart_total', $this->context->cart->getOrderTotal());
-    $smarty->assign('cart_qtd', $this->context->cart->nbProducts());
     $smarty->assign('cart_product_names', $this->getListProductsName());
     $smarty->assign('cart_total_weight', $this->context->cart->getTotalWeight());
-    $smarty->assign('cart_total_dimensions', $this->getDimensionsCart());
     $smarty->assign('url_shipping_quote',$this->context->link->getModuleLink('freteclick','calcularfrete'));
     return $this->display(__FILE__, 'simularfrete_cart.tpl');
   }
@@ -411,11 +409,6 @@ class freteclick extends CarrierModule
           'city-origin-id' => Configuration::get('FC_CITY_ORIGIN'),
           'product-type' => $this->getListProductsName(),
           'product-total-price' => $this->context->cart->getOrderTotal(),
-          'product-package[0][qtd]' => $this->context->cart->nbProducts(),
-          'product-package[0][weight]' => $this->context->cart->getTotalWeight(),
-          'product-package[0][height]' => $cart_total_dimensions['height'],
-          'product-package[0][width]' => $cart_total_dimensions['width'],
-          'product-package[0][depth]' => $cart_total_dimensions['depth'],
           'city-destination-id' => $this->getFcCityDestination($params['address']->city)
         );
         $arrSmarty['arr_transportadoras'] = $this->getTransportadoras($arrPostFields);
@@ -486,22 +479,7 @@ class freteclick extends CarrierModule
     foreach($this->context->cart->getProducts() as $product){
       $arrProductsName[] = $product['name'];
     }
-    return implode(" ",$arrProductsName);
-  }
-
-  private function getDimensionsCart()
-  {
-    $arrDimensions = array(
-      'width' => 0,
-      'height' => 0,
-      'depth' => 0
-    );
-    foreach($this->context->cart->getProducts() as $product){
-      $arrDimensions['width'] += $product['width'];
-      $arrDimensions['height'] += $product['height'];
-      $arrDimensions['depth'] += $product['depth'];
-    }
-    return $arrDimensions;
+    return implode(", ",$arrProductsName);
   }
 
   private function listCityDestination()
