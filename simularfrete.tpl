@@ -9,9 +9,9 @@
       <input type="hidden" name="product-total-price" id="product-total-price" value="{$product->price}" />
       <input type="hidden" name="product-package[0][qtd]" value="1" />
       <input type="hidden" name="product-package[0][weight]" value="{round($product->weight,2)}" />
-      <input type="hidden" name="product-package[0][height]" value="{round($product->height,2)}" />
-      <input type="hidden" name="product-package[0][width]" value="{round($product->width,2)}" />
-      <input type="hidden" name="product-package[0][depth]" value="{round($product->depth,2)}" />
+      <input type="hidden" name="product-package[0][height]" value="{round($product->height/100,2)}" />
+      <input type="hidden" name="product-package[0][width]" value="{round($product->width/100,2)}" />
+      <input type="hidden" name="product-package[0][depth]" value="{round($product->depth/100,2)}" />
 
       <div class="form-group">
         <select name="city-destination-id" id="city-destination-id" class="form-control chosen-select">
