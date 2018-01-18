@@ -190,6 +190,13 @@ class freteclick extends CarrierModule {
                         'class' => 'form-control ui-autocomplete-input'
                     ),
                     array(
+                        'type' => 'text',
+                        'label' => $this->l('Chave de API'),
+                        'hint' => $this->l('Digite a chave de API encontrada em seu painel http://www.freteclick.com.br'),
+                        'name' => 'FC_API_KEY',                        
+                        'required' => true,                        
+                    ),
+                    array(
                         'type' => 'radio',
                         'label' => $this->l('Informação do Produto'),
                         'hint' => $this->l('Exibe o box de cotação de frete na tela de descrição do produto.'),
@@ -265,6 +272,7 @@ class freteclick extends CarrierModule {
             'FC_CITY_ORIGIN_NAME' => Tools::getValue('FC_CITY_ORIGIN_NAME', Configuration::get('FC_CITY_ORIGIN_NAME')),
             'FC_INFO_PROD' => Tools::getValue('FC_INFO_PROD', Configuration::get('FC_INFO_PROD')),
             'FC_SHOP_CART' => Tools::getValue('FC_SHOP_CART', Configuration::get('FC_SHOP_CART')),
+            'FC_API_KEY' => Tools::getValue('FC_API_KEY', Configuration::get('FC_API_KEY')),
         );
         return $values;
     }

@@ -48,8 +48,7 @@ jQuery(function ($) {
                             if (!result) {
                                 console.log($(t).data('required-msg'));
                             }
-                            cache[ term ] = result;
-                            console.log(result);
+                            cache[ term ] = result;                            
                             response(result);
                         }
                     });

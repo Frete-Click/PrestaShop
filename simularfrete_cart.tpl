@@ -7,12 +7,12 @@
         <input type="hidden" name="product-total-price" id="product-total-price" value="{$cart_total}" />
         <input type="hidden" id="city-destination-id" name="city-destination-id" value="{$city_origin_id}" />
         <input type="text" class="form-control ui-autocomplete-input" name="city-destination" placeholder="Cidade de destino" data-autocomplete-ajax-url="{$url_city_destination}" data-autocomplete-hidden-result="#city-destination-id" data-required-msg="Selecione uma cidade da lista" required autocomplete="off">
-        {foreach key=key item=product from=$products}
-            <input type="hidden" name="product-package[{$key}][qtd]" value="{number_format($product->cart_quantity, 2, '', ',')}" />
-            <input type="hidden" name="product-package[{$key}][weight]" value="{number_format($product->weight, 2, '', ',')}" />
-            <input type="hidden" name="product-package[{$key}][height]" value="{number_format($product->height, 2, '', ',')}" />
-            <input type="hidden" name="product-package[{$key}][width]" value="{number_format($product->width, 2, '', ',')}" />
-            <input type="hidden" name="product-package[{$key}][depth]" value="{number_format($product->depth, 2, '', ',')}" />
+        {foreach key=key item=product from=$products}            
+            <input type="hidden" name="product-package[{$key}][qtd]" value="{number_format($product['cart_quantity'], 2, ',', '')}" />
+            <input type="hidden" name="product-package[{$key}][weight]" value="{number_format($product['weight']/100, 2, ',', '')}" />
+            <input type="hidden" name="product-package[{$key}][height]" value="{number_format($product['height']/100, 2, ',', '')}" />
+            <input type="hidden" name="product-package[{$key}][width]" value="{number_format($product['width']/100, 2, ',', '')}" />
+            <input type="hidden" name="product-package[{$key}][depth]" value="{number_format($product['depth']/100, 2, ',', '')}" />
         {/foreach}        
         <button class="btn btn-default" type="button" id="btCalcularFrete" data-loading-text="Carregando...">Calcular</button>
         </form>
