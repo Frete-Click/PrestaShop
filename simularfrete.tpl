@@ -51,7 +51,7 @@
                         if (json.response.success === true){
                         $.each(json.response.data.quote, function(index, val){
                         console.log(val);
-                                $("#frete-valores tbody").append(addRowTableFrete(val['carrier-name'], val['carrier-logo'], val.total));
+                                $("#frete-valores tbody").append(addRowTableFrete(val['carrier-name'], val['carrier-logo'],val.deadline, val.total));
                         });
                                 $('#resultado-frete').show('slow');
                         } else{
@@ -69,7 +69,7 @@
         
         }); // FIM function
 
-                function addRowTableFrete(nomeServico, imgLogo, valorServico)
+                function addRowTableFrete(nomeServico, imgLogo, deadline, valorServico)
                 {
                 return `
                         <tr>
@@ -77,7 +77,7 @@
                         <img src = "${imgLogo}" alt = "${nomeServico}" title = "${nomeServico}" width = "180" /> <br/>
                         <p> ${nomeServico} </p>
                         </td>
-                        <td> ${valorServico} </td>
+                        <td> Entrega em ${deadline} dias <br/> ${valorServico} </td>
                         </tr>
                         `;
                 }
