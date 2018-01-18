@@ -19,6 +19,7 @@ class freteclick extends CarrierModule {
     public $url_shipping_quote;
     public $url_city_origin;
     public $url_city_destination;
+    public $url_search_city_from_cep;
 
     public function __construct() {
         $this->name = 'freteclick';
@@ -41,6 +42,7 @@ class freteclick extends CarrierModule {
         $this->url_shipping_quote = 'https://www.freteclick.com.br/sales/shipping-quote.json';
         $this->url_city_origin = 'https://www.freteclick.com.br/carrier/search-city-origin.json';
         $this->url_city_destination = 'https://www.freteclick.com.br/carrier/search-city-destination.json';
+        $this->url_search_city_from_cep = 'https://www.freteclick.com.br/carrier/search-city-from-cep.json';
     }
 
     public function install() {
@@ -193,8 +195,8 @@ class freteclick extends CarrierModule {
                         'type' => 'text',
                         'label' => $this->l('Chave de API'),
                         'hint' => $this->l('Digite a chave de API encontrada em seu painel http://www.freteclick.com.br'),
-                        'name' => 'FC_API_KEY',                        
-                        'required' => true,                        
+                        'name' => 'FC_API_KEY',
+                        'required' => true,
                     ),
                     array(
                         'type' => 'radio',
@@ -357,7 +359,6 @@ class freteclick extends CarrierModule {
 
         try {
             if ($params['cart']->id_carrier == (int) (Configuration::get('FC_CARRIER_ID'))) {
-                $cart_total_dimensions = $this->getDimensionsCart();
                 $arrPostFields = array(
                     'city-origin-id' => Configuration::get('FC_CITY_ORIGIN'),
                     'product-type' => $this->getListProductsName(),
@@ -404,6 +405,16 @@ class freteclick extends CarrierModule {
     }
 
     public function getTransportadoras($postFields) {
+
+        foreach ($this->context->cart->getProducts() as $key => $product) {
+            $postFields['product-package'][$key]['qtd'] = $product['cart_quantity'];
+            $postFields['product-package'][$key]['weight'] = number_format($product['weight'], 2, ',', '');
+            $postFields['product-package'][$key]['height'] = number_format($product['height'] / 100, 2, ',', '');
+            $postFields['product-package'][$key]['width'] = number_format($product['width'] / 100, 2, ',', '');
+            $postFields['product-package'][$key]['depth'] = number_format($product['depth'] / 100, 2, ',', '');
+        }
+        $address = new Address(intval($this->context->cart->id_address_delivery));
+        $postFields['city-destination-id'] = $this->getCityIdFromCep($address->postcode);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url_shipping_quote);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -419,6 +430,23 @@ class freteclick extends CarrierModule {
             throw new Exception('Nenhuma transportadora disponível.');
         }
         return $arrData;
+    }
+
+    public function getCityIdFromCep($cep) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->url_search_city_from_cep);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array('cep' => $cep)));
+        $resp = curl_exec($ch);
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $jsonData = $this->filterJson($resp);
+        $arrData = json_decode($jsonData);
+        if ($arrData->response->success === false || $arrData->response->data === false) {
+            throw new Exception('Nenhuma transportadora disponível para este CEP: ' . $cep);
+        }
+        return $arrData->response->data->city->id;
     }
 
     public function filterJson($json) {
