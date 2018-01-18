@@ -380,20 +380,10 @@ class freteclick extends CarrierModule {
      */
     public function hookOrderConfirmation($params) {
         global $cookie;
-
+        $params['objOrder']->setWsShippingNumber($cookie->delivery_order_id);
+        $params['objOrder']->save();
+        //exit;
         //var_dump($params);exit;
-    }
-
-    private function getIsoCodeById($id_state) {
-        if (!$id_state) {
-            return false;
-        }
-        $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
-      SELECT `iso_code`
-      FROM `' . _DB_PREFIX_ . 'state`
-      WHERE `id_state` = ' . (int) $id_state
-        );
-        return $result;
     }
 
     private function getListProductsName() {
@@ -428,10 +418,13 @@ class freteclick extends CarrierModule {
         if ($arrData->response->success === false || $arrData->response->data === false) {
             throw new Exception('Nenhuma transportadora disponível.');
         }
+        global $cookie;
+        $cookie->delivery_order_id = $arrData->response->data->id;
+
         return $arrData;
     }
 
-    public function getCityIdFromCep($cep) {        
+    public function getCityIdFromCep($cep) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url_search_city_from_cep);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -441,11 +434,11 @@ class freteclick extends CarrierModule {
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         $jsonData = $this->filterJson($resp);
-        $arrData = json_decode($jsonData);                        
-        if ($arrData->response->success === false || $arrData->response->data === false|| $arrData->response->data->id === false) {
+        $arrData = json_decode($jsonData);
+        if ($arrData->response->success === false || $arrData->response->data === false || $arrData->response->data->id === false) {
             throw new Exception('Nenhuma transportadora disponível para este CEP: ' . $cep);
         }
-        
+
         return $arrData->response->data->id;
     }
 
