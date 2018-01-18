@@ -405,7 +405,6 @@ class freteclick extends CarrierModule {
     }
 
     public function getTransportadoras($postFields) {
-
         foreach ($this->context->cart->getProducts() as $key => $product) {
             $postFields['product-package'][$key]['qtd'] = $product['cart_quantity'];
             $postFields['product-package'][$key]['weight'] = number_format($product['weight'], 2, ',', '');
@@ -432,7 +431,7 @@ class freteclick extends CarrierModule {
         return $arrData;
     }
 
-    public function getCityIdFromCep($cep) {
+    public function getCityIdFromCep($cep) {        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url_search_city_from_cep);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -442,10 +441,11 @@ class freteclick extends CarrierModule {
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         $jsonData = $this->filterJson($resp);
-        $arrData = json_decode($jsonData);
-        if ($arrData->response->success === false || $arrData->response->data === false) {
+        $arrData = json_decode($jsonData);                        
+        if ($arrData->response->success === false || $arrData->response->data === false|| $arrData->response->data->id === false) {
             throw new Exception('Nenhuma transportadora disponível para este CEP: ' . $cep);
         }
+        
         return $arrData->response->data->id;
     }
 
