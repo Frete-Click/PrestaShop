@@ -418,7 +418,7 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_URL, $this->url_shipping_quote);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array_merge($postFields, array('key' => Configuration::get('FC_API_KEY')))));
         $resp = curl_exec($ch);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
