@@ -446,7 +446,7 @@ class freteclick extends CarrierModule {
         if ($arrData->response->success === false || $arrData->response->data === false) {
             throw new Exception('Nenhuma transportadora disponível para este CEP: ' . $cep);
         }
-        return $arrData->response->data->city->id;
+        return $arrData->response->data->id;
     }
 
     public function filterJson($json) {
