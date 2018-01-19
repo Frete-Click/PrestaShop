@@ -20,6 +20,7 @@ class freteclick extends CarrierModule {
     public $url_city_origin;
     public $url_city_destination;
     public $url_search_city_from_cep;
+    public $url_choose_quote;
 
     public function __construct() {
         $this->name = 'freteclick';
@@ -43,6 +44,7 @@ class freteclick extends CarrierModule {
         $this->url_city_origin = 'https://www.freteclick.com.br/carrier/search-city-origin.json';
         $this->url_city_destination = 'https://www.freteclick.com.br/carrier/search-city-destination.json';
         $this->url_search_city_from_cep = 'https://www.freteclick.com.br/carrier/search-city-from-cep.json';
+        $this->url_choose_quote = 'https://www.freteclick.com.br/sales/choose-quote.json';
     }
 
     public function install() {
@@ -285,8 +287,10 @@ class freteclick extends CarrierModule {
                 throw new Exception('O campo cidade de origem é obrigatório.');
             }
             Configuration::updateValue('FC_CITY_ORIGIN', Tools::getValue('FC_CITY_ORIGIN'));
+            Configuration::updateValue('FC_CITY_ORIGIN_NAME', Tools::getValue('FC_CITY_ORIGIN_NAME'));
             Configuration::updateValue('FC_INFO_PROD', Tools::getValue('FC_INFO_PROD'));
             Configuration::updateValue('FC_SHOP_CART', Tools::getValue('FC_SHOP_CART'));
+            Configuration::updateValue('FC_API_KEY', Tools::getValue('FC_API_KEY'));
             $this->_html .= $this->displayConfirmation($this->l('Configurações atualizadas'));
         } catch (Exception $ex) {
             $this->_postErrors[] = $ex->getMessage();
@@ -354,7 +358,7 @@ class freteclick extends CarrierModule {
             'display_name' => $this->displayName,
             'carrier_checked' => $params['cart']->id_carrier,
             'fc_carrier_id' => (int) (Configuration::get('FC_CARRIER_ID')),
-            'url_transportadora' => $this->context->link->getModuleLink('freteclick', 'transportadora')
+            'url_transportadora' => $this->context->link->getModuleLink('freteclick', 'transportadora') . '?_=' . microtime()
         );
 
         try {
@@ -363,6 +367,7 @@ class freteclick extends CarrierModule {
                     'city-origin-id' => Configuration::get('FC_CITY_ORIGIN'),
                     'product-type' => $this->getListProductsName(),
                     'product-total-price' => $this->context->cart->getOrderTotal(),
+                    'key' => Configuration::get('FC_API_KEY')
                 );
                 $arrSmarty['arr_transportadoras'] = $this->getTransportadoras($arrPostFields);
                 $arrSmarty['quote_id'] = ( isset($cookie->quote_id) ? $cookie->quote_id : null );
@@ -382,8 +387,77 @@ class freteclick extends CarrierModule {
         global $cookie;
         $params['objOrder']->setWsShippingNumber($cookie->delivery_order_id);
         $params['objOrder']->save();
-        //exit;
-        //var_dump($params);exit;
+        //$this->addQuoteOriginCompany($params['objOrder']);
+        //$this->addQuoteDestinationClient($params['objOrder']);
+    }
+
+    private function addQuoteDestinationClient($order) {
+        //https://www.freteclick.com.br/sales/add-quote-destination-client.json
+        global $cookie;
+        $address = new Address(intval($order->id_address_delivery));
+        echo '<pre>';
+        $customer = new Customer($order->id_customer);
+        $data['quote'] = $cookie->quote_id;
+        $data['complement'] = $address->address2;
+        $data['street'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), $address->address1));
+        $data['address-number'] = preg_replace('/[^0-9]/', '', $address->address1);
+        $data['cep'] = $address->postcode;
+        $data['city'] = $address->city;
+        $data['contact-name'] = $address->firstname . ' ' . $address->lastname;
+        $data['address-nickname'] = $address->alias;
+        $data['country'] = $address->country;
+        $data['company-alias'] = $address->company;
+        $data['company-name'] = $address->company;
+        $data['ddd'] = substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
+        $data['phone'] = substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
+        if ($address->company) {
+            $data['choose-client'] = 'company';
+        } else {
+            $data['choose-client'] = 'client';
+        }
+        $data['email'] = $customer->email;
+
+
+        $data['district'] = $cookie->quote_id;
+        $data['state'] = $cookie->quote_id;
+
+        print_r($data);
+        die();
+        /*
+          company-document:65.465.465/4654-65
+          client-document:
+         */
+        print_r($data);
+    }
+
+    private function addQuoteOriginCompany($order) {
+        //add-quote-origin-company.json
+        global $cookie;
+        $address = new Address(intval($order->id_address_delivery));
+        echo '<pre>';
+        print_r($address);
+        die();
+
+        /*
+          quote:6453
+          contact-id:7
+          contact-name:Luiz Kim Dias Ferreira
+          email:luizkim@gmail.com
+          ddd:(11)
+          phone:98180-5659
+          address-id:272
+          address-nickname:Endereço de entrega
+          cep:07055-030
+          street:Rua Gago Coutinho
+          address-number:12
+          complement:
+          district:Jardim Vila Galvao
+          city:Guarulhos
+          state:São Paulo
+          country:Brazil
+          lat:-23.4673357
+          lng:-46.56053480000003
+         */
     }
 
     private function getListProductsName() {
@@ -408,7 +482,7 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_URL, $this->url_shipping_quote);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array_merge($postFields, array('key' => Configuration::get('FC_API_KEY')))));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
         $resp = curl_exec($ch);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
@@ -420,7 +494,6 @@ class freteclick extends CarrierModule {
         }
         global $cookie;
         $cookie->delivery_order_id = $arrData->response->data->id;
-
         return $arrData;
     }
 
