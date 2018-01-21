@@ -5,7 +5,7 @@
         <input type="hidden" name="city-origin-id" value="{$city_origin_id}" />
         <input type="hidden" name="product-type" value="{$cart_product_names}" />
         <input type="hidden" name="product-total-price" id="product-total-price" value="{$cart_total}" />
-        <input type="text" class="form-control" name="cep" placeholder="CEP de destino" required>
+        <input type="text" id="fk-cep" onkeypress="maskCep(this, '#####-###')" maxlength="9" class="form-control" name="cep" placeholder="CEP de destino" required>
         {foreach key=key item=product from=$products}                        
             <input type="hidden" name="product-package[{$key}][qtd]" value="{$product['cart_quantity']}" />
             <input type="hidden" name="product-package[{$key}][weight]" value="{number_format($product['weight'], 2, ',', '')}" />
@@ -23,61 +23,3 @@
         </div>
     </div>
 </div>
-{literal}
-    <script>
-        jQuery(function($){        
-                $('#resultado-frete').hide();
-                $('#btCalcularFrete').click(function (){
-        var $btn = $(this).button('loading');
-                $('#resultado-frete').hide();
-                $("#frete-valores tbody").empty();
-                var inputForm = $('#calcular_frete').serialize();
-                $.ajax({
-                url: $('#calcular_frete').attr('action'),
-                        type: 'post',
-                        dataType: 'json',
-                        data: inputForm,
-                        success: function(json){
-                        if (json.response.success === true){
-                        jQuery.each(json.response.data.quote, function(index, val){
-                        console.log(val);
-                                $("#frete-valores tbody").append(addRowTableFrete(val['carrier-name'], val['carrier-logo'],val.deadline, val.total));
-                        });
-                                $('#resultado-frete').show('slow');
-                        } else{
-                        //erro
-                        $("#frete-valores tbody").append(addRowError(json.response.error));
-                                $('#resultado-frete').show('slow');
-                        }
-                        },
-                        complete: function(){
-                        $btn.button('reset');
-                        }
-                });
-        });
-        }); // FIM function
-
-                function addRowTableFrete(nomeServico, imgLogo, deadline, valorServico)
-                {
-                return `
-                        <tr>
-                        <td>
-                        <img src = "${imgLogo}" alt = "${nomeServico}" title = "${nomeServico}" width = "180" /> <br/>
-                        <p> ${nomeServico} </p>
-                        </td>
-                        <td> Entrega em ${deadline} dias <br/> ${valorServico} </td>
-                        </tr>
-                        `;
-                }
-
-        function addRowError(message)
-        {
-        return `
-                <tr>
-                <td> ${message} </td>
-                </tr>
-                `;
-        }
-
-    </script>
-{/literal}

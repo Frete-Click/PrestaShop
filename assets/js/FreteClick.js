@@ -1,10 +1,25 @@
-/*
+function maskCep(t, mask) {
+    var i = t.value.length;
+    var saida = mask.substring(1, 0);
+    var texto = mask.substring(i)
+    if (texto.substring(0, 1) != saida) {
+        t.value += texto.substring(0, 1);
+    }
+}
+function addRowTableFrete(nomeServico, imgLogo, deadline, valorServico) {
+    return '<tr><td><img src="'+imgLogo+'" alt="'+nomeServico+'" title="'+nomeServico+'" width = "180" /> <br/><p> '+nomeServico+' </p></td><td> Entrega em '+deadline+' dias <br/> '+valorServico+' </td></tr>';
+}
+
+function addRowError(message) {
+    return '<tr><td> '+message+' </td></tr>';
+}
+
 jQuery(function ($) {
     $(document).ready(function () {
         $.fn.extend({
             propAttr: $.fn.prop || $.fn.attr
         });
-        $('#box-frete-click,#module_form').find("[data-autocomplete-ajax-url]").each(function () {
+        $('#module_form').find("[data-autocomplete-ajax-url]").each(function () {
             var cache = {};
             var search = [];
             var t = this;
@@ -49,12 +64,54 @@ jQuery(function ($) {
                             if (!result) {
                                 console.log($(t).data('required-msg'));
                             }
-                            cache[ term ] = result;                            
+                            cache[ term ] = result;
                             response(result);
                         }
                     });
                 }});
         });
+
+
+        if ($('[name="fkcorreiosg2_cep"]') && 1 === 'a') {
+            $('#calcular_frete,#box-frete-click').hide();
+            $('.fkcorreiosg2-button').click(function () {
+                $('#btCalcularFrete').click()
+            });
+        }
+
+
+        $('#resultado-frete').hide();
+        $('#btCalcularFrete').click(function () {
+            var $btn = $(this).button('loading');
+            $('#resultado-frete').hide();
+            $("#frete-valores tbody").empty();
+            var inputForm = $('#calcular_frete').serialize();
+            $.ajax({
+                url: $('#calcular_frete').attr('action'),
+                type: 'post',
+                dataType: 'json',
+                data: inputForm,
+                success: function (json) {
+                    if (json.response.success === true) {
+                        jQuery.each(json.response.data.quote, function (index, val) {
+                            $("#frete-valores tbody").append(addRowTableFrete(val['carrier-name'], val['carrier-logo'], val.deadline, val.total));
+                        });
+                        $('#resultado-frete').show('slow');
+                    } else {
+                        //erro
+                        $("#frete-valores tbody").append(addRowError(json.response.error));
+                        $('#resultado-frete').show('slow');
+                    }
+                },
+                complete: function () {
+                    $btn.button('reset');
+                }
+            });
+        });
+
+
+
+
     });
-});
-*/
+}
+);
