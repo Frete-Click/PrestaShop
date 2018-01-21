@@ -1,3 +1,4 @@
+/*
 jQuery(function ($) {
     $(document).ready(function () {
         $.fn.extend({
@@ -56,3 +57,4 @@ jQuery(function ($) {
         });
     });
 });
+*/

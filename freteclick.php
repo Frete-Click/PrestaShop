@@ -145,7 +145,7 @@ class freteclick extends CarrierModule {
             }
 
             // Copy Logo
-            if (!copy(dirname(__FILE__) . '/' . $config['logo_img'], _PS_SHIP_IMG_DIR_ . '/' . (int) $carrier->id . '.jpg')) {
+            if (!copy(dirname(__FILE__) . '/assets/img/' . $config['logo_img'], _PS_SHIP_IMG_DIR_ . '/' . (int) $carrier->id . '.jpg')) {
                 return false;
             }
 
@@ -156,9 +156,8 @@ class freteclick extends CarrierModule {
         return false;
     }
 
-    public function getContent() {
-        $this->context->controller->addJqueryUI('ui.autocomplete');
-        $this->context->controller->addJS($this->_path . 'Autocomplete.js');
+    public function getContent() {        
+        $this->context->controller->addJS($this->_path . 'assets/js/FreteClick.js');
         if (Tools::isSubmit('btnSubmit')) {
             $this->_postProcess();
 
@@ -323,14 +322,13 @@ class freteclick extends CarrierModule {
 
         if (Configuration::get('FC_INFO_PROD') != '1') {
             return false;
-        }
-        $this->context->controller->addJqueryUI('ui.autocomplete');
-        $this->context->controller->addJS($this->_path . 'Autocomplete.js');
+        }        
+        $this->context->controller->addJS($this->_path . 'assets/js/FreteClick.js');
         $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
         $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
         $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
         $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
-        return $this->display(__FILE__, 'simularfrete.tpl');
+        return $this->display(__FILE__, 'view/simularfrete.tpl');
     }
 
     public function hookdisplayShoppingCartFooter($params) {
@@ -338,9 +336,8 @@ class freteclick extends CarrierModule {
 
         if (Configuration::get('FC_SHOP_CART') != '1') {
             return false;
-        }
-        $this->context->controller->addJqueryUI('ui.autocomplete');
-        $this->context->controller->addJS($this->_path . 'Autocomplete.js');
+        }        
+        $this->context->controller->addJS($this->_path . 'assets/js/FreteClick.js');
         $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
         $smarty->assign('cart_total', $this->context->cart->getOrderTotal());
         $smarty->assign('cart_product_names', $this->getListProductsName());
@@ -348,7 +345,7 @@ class freteclick extends CarrierModule {
         $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
         $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
         $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
-        return $this->display(__FILE__, 'simularfrete_cart.tpl');
+        return $this->display(__FILE__, 'view/simularfrete_cart.tpl');
     }
 
     public function hookextraCarrier($params) {
@@ -377,7 +374,7 @@ class freteclick extends CarrierModule {
         }
 
         $smarty->assign($arrSmarty);
-        return $this->display(__FILE__, 'order_shipping.tpl');
+        return $this->display(__FILE__, 'view/order_shipping.tpl');
     }
 
     /**

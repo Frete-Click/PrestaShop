@@ -2,9 +2,8 @@
     <div class="panel-heading">CALCULAR FRETE</div>
     <div class="panel-body">
         <form name="calcular_frete" id="calcular_frete" action="{$url_shipping_quote}" method="post" />
-        <input type="hidden" name="city-origin-id" value="{$city_origin_id}" />        
-        <input type="hidden" id="city-destination-id" name="city-destination-id" value="{$city_origin_id}" />
-        <input type="text" class="form-control ui-autocomplete-input" name="city-destination" placeholder="Cidade de destino" data-autocomplete-ajax-url="{$url_city_destination}" data-autocomplete-hidden-result="#city-destination-id" data-required-msg="Selecione uma cidade da lista" required autocomplete="off">
+        <input type="hidden" name="city-origin-id" value="{$city_origin_id}" />                
+        <input type="text" class="form-control" name="cep" placeholder="CEP de destino" required>
         <input type="hidden" name="product-type" value="{$product->name}" />
         <input type="hidden" name="product-total-price" id="product-total-price" data-value="{$product->price}" value="{$product->price}" />
         <input type="hidden" name="product-package[0][qtd]" value="1" />
