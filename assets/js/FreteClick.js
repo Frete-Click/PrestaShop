@@ -7,7 +7,7 @@ function maskCep(t, mask) {
     }
 }
 function addRowTableFrete(nomeServico, imgLogo, deadline, valorServico) {
-    return '<tr><td><img src="'+imgLogo+'" alt="'+nomeServico+'" title="'+nomeServico+'" width = "180" /> <br/><p> '+nomeServico+' </p></td><td> Entrega em '+deadline+' dias <br/> '+valorServico+' </td></tr>';
+    return '<tr><td><img src="'+imgLogo+'" alt="'+nomeServico+'" title="'+nomeServico+'" width = "180" /> <br/><p> '+nomeServico+' </p></td><td> Entrega em '+deadline+' dia(s) <br/> '+valorServico+' </td></tr>';
 }
 
 function addRowError(message) {
