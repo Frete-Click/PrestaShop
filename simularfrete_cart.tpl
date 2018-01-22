@@ -8,10 +8,10 @@
         <input type="text" id="fk-cep" onkeypress="maskCep(this, '#####-###')" maxlength="9" class="form-control" name="cep" placeholder="CEP de destino" required>
         {foreach key=key item=product from=$products}                        
             <input type="hidden" name="product-package[{$key}][qtd]" value="{$product['cart_quantity']}" />
-            <input type="hidden" name="product-package[{$key}][weight]" value="{number_format($product['weight'], 10, ',', '')}" />
-            <input type="hidden" name="product-package[{$key}][height]" value="{number_format($product['height']/100, 10, ',', '')}" />
-            <input type="hidden" name="product-package[{$key}][width]" value="{number_format($product['width']/100, 10, ',', '')}" />
-            <input type="hidden" name="product-package[{$key}][depth]" value="{number_format($product['depth']/100, 10, ',', '')}" />
+            <input type="hidden" name="product-package[{$key}][weight]" value="{$product['weight']}" />
+            <input type="hidden" name="product-package[{$key}][height]" value="{$product['height']/100}" />
+            <input type="hidden" name="product-package[{$key}][width]" value="{$product['width']/100}" />
+            <input type="hidden" name="product-package[{$key}][depth]" value="{$product['depth']/100}" />
         {/foreach}        
         <button class="btn btn-default" type="button" id="btCalcularFrete" data-loading-text="Carregando...">Calcular</button>
         </form>

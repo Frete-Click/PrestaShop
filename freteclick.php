@@ -28,6 +28,8 @@ class freteclick extends CarrierModule {
         $this->version = '1.0';
         $this->author = 'Ederson Ferreira';
         $this->bootstrap = true;
+        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->module_key = '787992febc148fba30e5885d08c14f8b';
 
         parent::__construct();
 
@@ -469,10 +471,10 @@ class freteclick extends CarrierModule {
     public function getTransportadoras($postFields) {
         foreach ($this->context->cart->getProducts() as $key => $product) {
             $postFields['product-package'][$key]['qtd'] = $product['cart_quantity'];
-            $postFields['product-package'][$key]['weight'] = number_format($product['weight'], 2, ',', '');
-            $postFields['product-package'][$key]['height'] = number_format($product['height'] / 100, 2, ',', '');
-            $postFields['product-package'][$key]['width'] = number_format($product['width'] / 100, 2, ',', '');
-            $postFields['product-package'][$key]['depth'] = number_format($product['depth'] / 100, 2, ',', '');
+            $postFields['product-package'][$key]['weight'] = number_format($product['weight'], 10, ',', '');
+            $postFields['product-package'][$key]['height'] = number_format($product['height'] / 100, 10, ',', '');
+            $postFields['product-package'][$key]['width'] = number_format($product['width'] / 100, 10, ',', '');
+            $postFields['product-package'][$key]['depth'] = number_format($product['depth'] / 100, 10, ',', '');
         }
         $address = new Address(intval($this->context->cart->id_address_delivery));
         $postFields['city-destination-id'] = $this->getCityIdFromCep($address->postcode);
