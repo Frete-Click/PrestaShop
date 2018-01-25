@@ -7,11 +7,11 @@ function maskCep(t, mask) {
     }
 }
 function addRowTableFrete(nomeServico, imgLogo, deadline, valorServico) {
-    return '<tr><td><img src="'+imgLogo+'" alt="'+nomeServico+'" title="'+nomeServico+'" width = "180" /> <br/><p> '+nomeServico+' </p></td><td> Entrega em '+deadline+' dia(s) <br/> '+valorServico+' </td></tr>';
+    return '<tr><td><img src="' + imgLogo + '" alt="' + nomeServico + '" title="' + nomeServico + '" width = "180" /> <br/><p> ' + nomeServico + ' </p></td><td> Entrega em ' + deadline + ' dia(s) <br/> ' + valorServico + ' </td></tr>';
 }
 
 function addRowError(message) {
-    return '<tr><td> '+message+' </td></tr>';
+    return '<tr><td> ' + message + ' </td></tr>';
 }
 
 jQuery(function ($) {
@@ -19,6 +19,20 @@ jQuery(function ($) {
         $.fn.extend({
             propAttr: $.fn.prop || $.fn.attr
         });
+
+        $("[data-field-qty=qty]").click(function () {
+            setTimeout(function(){  $("#quantity_wanted").trigger('change'); }, 300);
+           
+        });
+
+        $("#quantity_wanted").change(function () {
+            $('[name="product-package[0][qtd]"]').attr('value', $(this).val());
+            var price = $('#product-total-price').data('value') * $(this).val();
+            //$('#product-total-price').attr('value', price.toString().replace('.', ','));
+            $('#product-total-price').attr('value', price);
+        });
+
+
         $('#module_form').find("[data-autocomplete-ajax-url]").each(function () {
             var cache = {};
             var search = [];
