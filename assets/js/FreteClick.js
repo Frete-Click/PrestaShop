@@ -7,11 +7,11 @@ function maskCep(t, mask) {
     }
 }
 function addRowTableFrete(nomeServico, imgLogo, deadline, valorServico) {
-    return '<tr><td><img src="'+imgLogo+'" alt="'+nomeServico+'" title="'+nomeServico+'" width = "180" /> <br/><p> '+nomeServico+' </p></td><td> Entrega em '+deadline+' dia(s) <br/> '+valorServico+' </td></tr>';
+    return '<tr><td><img src="' + imgLogo + '" alt="' + nomeServico + '" title="' + nomeServico + '" width = "180" /> <br/><p> ' + nomeServico + ' </p></td><td> Entrega em ' + deadline + ' dia(s) <br/> ' + valorServico + ' </td></tr>';
 }
 
 function addRowError(message) {
-    return '<tr><td> '+message+' </td></tr>';
+    return '<tr><td> ' + message + ' </td></tr>';
 }
 
 jQuery(function ($) {
@@ -19,6 +19,22 @@ jQuery(function ($) {
         $.fn.extend({
             propAttr: $.fn.prop || $.fn.attr
         });
+
+        $("[data-field-qty=qty]").click(function () {
+            setTimeout(function () {
+                $("#quantity_wanted").trigger('change');
+            }, 300);
+
+        });
+
+        $("#quantity_wanted").change(function () {
+            $('[name="product-package[0][qtd]"]').attr('value', $(this).val());
+            var price = $('#product-total-price').data('value') * $(this).val();
+            //$('#product-total-price').attr('value', price.toString().replace('.', ','));
+            $('#product-total-price').attr('value', price);
+        });
+
+
         $('#module_form').find("[data-autocomplete-ajax-url]").each(function () {
             var cache = {};
             var search = [];
@@ -70,17 +86,6 @@ jQuery(function ($) {
                     });
                 }});
         });
-
-
-        if ($('[name="fkcorreiosg2_cep"]') && 1 === 'a') {
-            $('#calcular_frete,#box-frete-click').hide();
-            $('.fkcorreiosg2-button').click(function () {
-                $('#btCalcularFrete').click()
-            });
-        }
-
-
-        $('#resultado-frete').hide();
         $('#btCalcularFrete').click(function () {
             var $btn = $(this).button('loading');
             $('#resultado-frete').hide();
@@ -109,8 +114,59 @@ jQuery(function ($) {
             });
         });
 
+        $('#resultado-frete').hide();
+        if ($('[name="fkcorreiosg2_cep"]')) {
+            $('#calcular_frete,#box-frete-click').hide();
+            $('[name="fkcorreiosg2_cep"]').change(function () {
+                $('#fk-cep').val($('[name="fkcorreiosg2_cep"]').val());
+            });
+            $('#fk-cep').val($('[name="fkcorreiosg2_cep"]').val());
+            if ($('#fk-cep').val().length == 9) {
+                $('#btCalcularFrete').click();
+                $('#box-frete-click').show();
+            }
+            $('.fkcorreiosg2-button').click(function () {
+                $('#btCalcularFrete').click();
+                $('#box-frete-click').show();
+            });
+        }
 
+        /*
+         delivery_option_radio
+         $(button).prop('disabled', true);
+         */
 
+        $('input[name="fc_transportadora"]').click(function () {
+            var button = $('[name="processCarrier"]');
+            var fprice = $(this).attr('data-fprice'),
+                    nome_transportadora = $(this).attr('data-name'),
+                    module_name = $('#module_name').val();
+            var descricao = '<strong>' + module_name + '</strong><br/>' + 'Transportadora:' + nome_transportadora + '<br/>';
+            $.ajax({
+                url: $('#url_transportadora').val(),
+                type: "post",
+                dataType: "json",
+                data: {
+                    quote_id: $(this).val(),
+                    nome_transportadora: nome_transportadora,
+                    valor_frete: $(this).attr('data-price')
+                },
+                success: function (json) {
+                    if (json.status === true) {
+                        $('.delivery_option_radio:checked').closest('tr').find('td.delivery_option_price').prev().html(descricao);
+                        $('.delivery_option_radio:checked').closest('tr').find('td.delivery_option_price').html(fprice);
+                    }
+                }
+            });
+        });
+
+        $(document).on('submit', 'form[name=carrier_area]', function () {
+            var valTransportadora = $('input[name="fc_transportadora"]:checked').length;
+            if (valTransportadora === 0 && $('input[name="fc_transportadora"]').length) {
+                alert('Selecione uma transportadora FreteClick');
+                return false;
+            }
+        });
 
     });
 }

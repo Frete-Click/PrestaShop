@@ -39,46 +39,4 @@
     {/if}
   </div>
 <input type="hidden" name="module_name" id="module_name" value="{$display_name}" />
-{literal}
-<script>
-  $(document).ready(function(){
-
-    $('input[name="fc_transportadora"]').click(function(){
-      var fprice = $(this).attr('data-fprice'),
-        nome_transportadora = $(this).attr('data-name'),
-        module_name = $('#module_name').val();
-        descricao = `
-          <strong>${module_name}</strong><br />
-          Transportadora: ${nome_transportadora}<br />
-        `;
-      $.ajax({
-        url: $('#url_transportadora').val(),
-        type: "post",
-        dataType: "json",
-        data:{
-          quote_id: $(this).val(),
-          nome_transportadora: nome_transportadora,
-          valor_frete: $(this).attr('data-price')
-        },
-        success: function(json){
-          if(json.status === true){
-            $('.delivery_option_radio:checked').closest('tr').find('td.delivery_option_price').prev().html(descricao);
-            $('.delivery_option_radio:checked').closest('tr').find('td.delivery_option_price').html(fprice);
-          }
-        }
-      });
-    });
-
-    $(document).on('submit', 'form[name=carrier_area]', function(){
-      var valTransportadora = $('input[name="fc_transportadora"]:checked').length;
-      if(valTransportadora === 0){
-        alert('Selecione uma transportadora FreteClick');
-        return false;
-      }
-    });
-
-  }); // FIM document
-</script>
-{/literal}
-
 {/if}

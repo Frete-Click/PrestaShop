@@ -28,8 +28,6 @@ class freteclick extends CarrierModule {
         $this->version = '1.0';
         $this->author = 'Ederson Ferreira';
         $this->bootstrap = true;
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
-        $this->module_key = '787992febc148fba30e5885d08c14f8b';
 
         parent::__construct();
 
@@ -353,7 +351,7 @@ class freteclick extends CarrierModule {
 
     public function hookextraCarrier($params) {
         global $smarty, $cookie;
-
+        $this->context->controller->addJS($this->_path . 'assets/js/FreteClick.js');
         $arrSmarty = array(
             'display_name' => $this->displayName,
             'carrier_checked' => $params['cart']->id_carrier,
