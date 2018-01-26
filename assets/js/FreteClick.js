@@ -19,12 +19,11 @@ jQuery(function ($) {
         $.fn.extend({
             propAttr: $.fn.prop || $.fn.attr
         });
-
         $("[data-field-qty=qty]").click(function () {
+
             setTimeout(function () {
                 $("#quantity_wanted").trigger('change');
             }, 300);
-
         });
 
         $("#quantity_wanted").change(function () {
