@@ -21,16 +21,14 @@ class freteclick extends CarrierModule {
     public $url_city_destination;
     public $url_search_city_from_cep;
     public $url_choose_quote;
-    public $path;
 
     public function __construct() {
         $this->name = 'freteclick';
         $this->tab = 'shipping_logistics';
         $this->version = '1.0';
         $this->author = 'Ederson Ferreira';
-        $this->bootstrap = true;        
-        parent::__construct();        
-        $this->path = $this->_path;
+        $this->bootstrap = true;
+        parent::__construct();
         $this->displayName = $this->l('FreteClick');
         $this->description = $this->l('Calculo do frete com o serviço web FreteClick');
 
@@ -476,6 +474,7 @@ class freteclick extends CarrierModule {
             $postFields['product-package'][$key]['depth'] = number_format($product['depth'] / 100, 10, ',', '');
         }
         $address = new Address(intval($this->context->cart->id_address_delivery));
+        $postFields['cep'] = $address->postcode;
         $postFields['city-destination-id'] = $this->getCityIdFromCep($address->postcode);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url_shipping_quote);
@@ -485,15 +484,86 @@ class freteclick extends CarrierModule {
         $resp = curl_exec($ch);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+        $arrJson = $this->filterJson($resp);
+        $arrJson = $this->orderByPrice($this->calculaPrecoPrazo($postFields, $arrJson));        
+        foreach ($arrJson->response->data->quote as $key => $quote) {
+            $quote_price = number_format($quote->total, 2, ',', '.');
+            $arrJson->response->data->quote[$key]->raw_total = str_replace(',', '.', $quote->total);
+            $arrJson->response->data->quote[$key]->total = "R$ {$quote_price}";
+        }
 
-        $jsonData = $this->filterJson($resp);
-        $arrData = json_decode($jsonData);
-        if ($arrData->response->success === false || $arrData->response->data === false) {
+        if ($arrJson->response->success === false || $arrJson->response->data === false) {
             throw new Exception('Nenhuma transportadora disponível.');
         }
         global $cookie;
-        $cookie->delivery_order_id = $arrData->response->data->id;
-        return $arrData;
+        $cookie->delivery_order_id = $arrJson->response->data->id;
+        return $arrJson;
+    }
+
+    public function orderByPrice($arrJson) {
+        $quotes = (array) $arrJson->response->data->quote;
+        usort($quotes, function($a, $b) {
+            return $a->total > $b->total;
+        });
+        $arrJson->response->data->quote = $quotes;
+        return $arrJson;
+    }
+
+    public function calculaDimencoesCorreios($data) {
+        foreach ($data['product-package'] AS $p) {
+            $total += $p['qtd'] * (str_replace(',', '.', $p['height']) * 100) * (str_replace(',', '.', $p['width']) * 100) * (str_replace(',', '.', $p['depth']));
+        }
+        $raiz = pow($total, (1 / 3)) * 100;
+        $data['width'] = round($raiz);
+        $data['height'] = round($raiz);
+        $data['depth'] = round($raiz);
+        return $data;
+    }
+
+    public function calculaPrecoPrazo($data, $arrJson) {
+        $data = $this->calculaDimencoesCorreios($data);
+        $dados = array(
+            '4510' => 'PAC',
+            '4014' => 'SEDEX'
+        );
+        $parm = array(
+            'nCdEmpresa' => $this->empresa,
+            'sDsSenha' => $this->senha,
+            'nCdServico' => implode(',', array_keys($dados)),
+            'sCepOrigem' => $data['cep'],
+            'sCepDestino' => $data['cep'],
+            'nVlPeso' => 10,
+            'nCdFormato' => 1,
+            'nVlComprimento' => (string) ($data['depth'] > 16 ? $data['depth'] : 16),
+            'nVlAltura' => (string) ($data['height'] > 2 ? $data['height'] : 2),
+            'nVlLargura' => (string) ($data['width'] > 16 ? $data['width'] : 16),
+            'nVlDiametro' => '0',
+            'sCdMaoPropria' => 'n',
+            'nVlValorDeclarado' => $data['product-total-price'],
+            'sCdAvisoRecebimento' => 'n'
+        );
+
+        try {
+            $ws = new SoapClient($this->url_api_correios);
+            $arrayRetorno = $ws->CalcPrecoPrazo($parm);
+            $retornos = $arrayRetorno->CalcPrecoPrazoResult->Servicos->cServico;
+            foreach ($retornos as $retorno) {
+                if (!$retorno->MsgErro) {
+                    $arrJson->response->data->quote[] = (object) array(
+                                "carrier-alias" => $dados[$retorno->Codigo],
+                                "carrier-logo" => $this->_path . 'assets/img/' . $dados[$retorno->Codigo] . '.png',
+                                "carrier-name" => $dados[$retorno->Codigo],
+                                "deadline" => $retorno->PrazoEntrega,
+                                "delivery-restricted" => false,
+                                "logo" => $this->_path . 'assets/img/' . $dados[$retorno->Codigo] . '.png',
+                                'total' => $retorno->Valor
+                    );
+                }
+            }
+            return $arrJson;
+        } catch (Exception $e) {
+            return $arrJson;
+        }
     }
 
     public function getCityIdFromCep($cep) {
@@ -505,8 +575,7 @@ class freteclick extends CarrierModule {
         $resp = curl_exec($ch);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        $jsonData = $this->filterJson($resp);
-        $arrData = json_decode($jsonData);
+        $arrData = $this->filterJson($resp);
         if ($arrData->response->success === false || $arrData->response->data === false || $arrData->response->data->id === false) {
             throw new Exception('Nenhuma transportadora disponível para este CEP: ' . $cep);
         }
@@ -516,6 +585,9 @@ class freteclick extends CarrierModule {
 
     public function filterJson($json) {
         $arrJson = Tools::jsonDecode($json);
+        if (!$arrJson) {
+            throw new Exception('Erro ao recuperar dados');
+        }
         if ($arrJson->response->success === false) {
             if ($arrJson->response->error) {
                 foreach ($arrJson->response->error as $error) {
@@ -524,12 +596,7 @@ class freteclick extends CarrierModule {
             }
             throw new Exception('Erro ao recuperar dados');
         }
-        foreach ($arrJson->response->data->quote as $key => $quote) {
-            $quote_price = number_format($quote->total, 2, ',', '.');
-            $arrJson->response->data->quote[$key]->raw_total = number_format($quote->total, 2, '.', '');
-            $arrJson->response->data->quote[$key]->total = "R$ {$quote_price}";
-        }
-        return Tools::jsonEncode($arrJson);
+        return $arrJson;
     }
 
 }
