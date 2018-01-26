@@ -20,12 +20,10 @@ jQuery(function ($) {
             propAttr: $.fn.prop || $.fn.attr
         });
         $("[data-field-qty=qty]").click(function () {
-
             setTimeout(function () {
                 $("#quantity_wanted").trigger('change');
             }, 300);
         });
-
         $("#quantity_wanted").change(function () {
             $('[name="product-package[0][qtd]"]').attr('value', $(this).val());
             var price = $('#product-total-price').data('value') * $(this).val();
@@ -115,6 +113,18 @@ jQuery(function ($) {
 
         $('#resultado-frete').hide();
         if ($('[name="fkcorreiosg2_cep"]')) {
+
+            $(".cart_quantity input").change(function () {
+                setTimeout(function () {
+                    $('.fkcorreiosg2-button').trigger('click');
+                }, 3000);
+            });
+            $(".cart_quantity_button a").click(function () {
+                setTimeout(function () {
+                    $('.fkcorreiosg2-button').trigger('click');
+                }, 3000);
+            });
+
             $('#calcular_frete,#box-frete-click').hide();
             $('[name="fkcorreiosg2_cep"]').change(function () {
                 $('#fk-cep').val($('[name="fkcorreiosg2_cep"]').val());

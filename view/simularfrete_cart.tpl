@@ -1,5 +1,5 @@
 <div id="box-frete-click" class="panel panel-info">
-    <div class="panel-heading">CALCULAR FRETE</div>
+    <div class="panel-heading">Frete Click</div>
     <div class="panel-body">
         <form name="calcular_frete" id="calcular_frete" action="{$url_shipping_quote}" method="post" />
         <input type="hidden" name="city-origin-id" value="{$city_origin_id}" />
