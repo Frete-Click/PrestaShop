@@ -21,16 +21,16 @@ class freteclick extends CarrierModule {
     public $url_city_destination;
     public $url_search_city_from_cep;
     public $url_choose_quote;
+    public $path;
 
     public function __construct() {
         $this->name = 'freteclick';
         $this->tab = 'shipping_logistics';
         $this->version = '1.0';
         $this->author = 'Ederson Ferreira';
-        $this->bootstrap = true;
-
-        parent::__construct();
-
+        $this->bootstrap = true;        
+        parent::__construct();        
+        $this->path = $this->_path;
         $this->displayName = $this->l('FreteClick');
         $this->description = $this->l('Calculo do frete com o serviço web FreteClick');
 
@@ -45,6 +45,7 @@ class freteclick extends CarrierModule {
         $this->url_city_destination = 'https://www.freteclick.com.br/carrier/search-city-destination.json';
         $this->url_search_city_from_cep = 'https://www.freteclick.com.br/carrier/search-city-from-cep.json';
         $this->url_choose_quote = 'https://www.freteclick.com.br/sales/choose-quote.json';
+        $this->url_api_correios = 'http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx?WSDL';
     }
 
     public function install() {

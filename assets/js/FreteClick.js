@@ -19,9 +19,9 @@ jQuery(function ($) {
         $.fn.extend({
             propAttr: $.fn.prop || $.fn.attr
         });
-        $("[data-field-qty=qty]").click(function () {
+        $("[data-field-qty=qty],.cart_quantity_button a").click(function () {
             setTimeout(function () {
-                $("#quantity_wanted").trigger('change');
+                $("#quantity_wanted,.cart_quantity input").trigger('change');
             }, 300);
         });
         $("#quantity_wanted").change(function () {
@@ -112,19 +112,12 @@ jQuery(function ($) {
         });
 
         $('#resultado-frete').hide();
-        if ($('[name="fkcorreiosg2_cep"]')) {
-
+        if ($('[name="fkcorreiosg2_cep"]').length > 0) {
             $(".cart_quantity input").change(function () {
                 setTimeout(function () {
                     $('.fkcorreiosg2-button').trigger('click');
                 }, 3000);
             });
-            $(".cart_quantity_button a").click(function () {
-                setTimeout(function () {
-                    $('.fkcorreiosg2-button').trigger('click');
-                }, 3000);
-            });
-
             $('#calcular_frete,#box-frete-click').hide();
             $('[name="fkcorreiosg2_cep"]').change(function () {
                 $('#fk-cep').val($('[name="fkcorreiosg2_cep"]').val());
@@ -138,7 +131,15 @@ jQuery(function ($) {
                 $('#btCalcularFrete').click();
                 $('#box-frete-click').show();
             });
+
+            $("#quantity_wanted").change(function () {
+                setTimeout(function () {
+                    $('#btCalcularFrete').trigger('click');
+                }, 1000);
+            });
         }
+
+
 
         /*
          delivery_option_radio
