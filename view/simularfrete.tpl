@@ -3,7 +3,7 @@
     <div class="panel-body">
         <form name="calcular_frete" id="calcular_frete" action="{$url_shipping_quote}" method="post" />
         <input type="hidden" name="city-origin-id" value="{$city_origin_id}" />                
-        <input type="text" id="fk-cep" onkeypress="maskCep(this, '#####-###')" maxlength="9" class="form-control" name="cep" placeholder="CEP de destino" required>
+        <input type="text" id="fk-cep"  value="{$cep}" onkeypress="maskCep(this, '#####-###')" maxlength="9" class="form-control" name="cep" placeholder="CEP de destino" required>
         <input type="hidden" name="product-type" value="{$product->name}" />
         <input type="hidden" name="product-total-price" id="product-total-price" data-value="{$product->price}" value="{$product->price}" />
         <input type="hidden" name="product-package[0][qtd]" value="1" />

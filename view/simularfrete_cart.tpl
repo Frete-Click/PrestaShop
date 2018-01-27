@@ -5,7 +5,7 @@
         <input type="hidden" name="city-origin-id" value="{$city_origin_id}" />
         <input type="hidden" name="product-type" value="{$cart_product_names}" />
         <input type="hidden" name="product-total-price" id="product-total-price" value="{$cart_total}" />
-        <input type="text" id="fk-cep" onkeypress="maskCep(this, '#####-###')" maxlength="9" class="form-control" name="cep" placeholder="CEP de destino" required>
+        <input type="text" id="fk-cep" value="{$cep}" onkeypress="maskCep(this, '#####-###')" maxlength="9" class="form-control" name="cep" placeholder="CEP de destino" required>
         {foreach key=key item=product from=$products}                        
             <input type="hidden" name="product-package[{$key}][qtd]" value="{$product['cart_quantity']}" />
             <input type="hidden" name="product-package[{$key}][weight]" value="{number_format($product['weight'], 10, ',', '')}" />

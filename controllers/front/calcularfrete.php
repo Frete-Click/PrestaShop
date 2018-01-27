@@ -8,11 +8,12 @@
 class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController {
 
     public function initContent() {
+        global $cookie;
         $arrRetorno = array();
         try {
             $city_destination_id = $this->getCity();
-
             if ($city_destination_id) {
+                $cookie->cep = $_POST['cep'];
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $this->module->url_shipping_quote);
                 curl_setopt($ch, CURLOPT_POST, true);
@@ -23,6 +24,7 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
                 curl_close($ch);
                 $arrJson = $this->module->filterJson($resp);
                 $arrJson = $this->module->orderByPrice($this->module->calculaPrecoPrazo($_POST, $arrJson));
+                $cookie->fc_valorFrete = $arrJson->response->data->quote[0]->total;
                 foreach ($arrJson->response->data->quote as $key => $quote) {
                     $quote_price = number_format($quote->total, 2, ',', '.');
                     $arrJson->response->data->quote[$key]->total = "R$ {$quote_price}";
@@ -38,11 +40,6 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
             exit;
         }
     }
-
-
-   
-
-
 
     public function getCity() {
         $ch = curl_init();
@@ -70,6 +67,5 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
             throw new Exception('Cidade não encontrada à partir deste CEP');
         }
     }
-
 
 }
