@@ -173,7 +173,7 @@ jQuery(function ($) {
         $(document).on('submit', 'form[name=carrier_area]', function () {
             var valTransportadora = $('input[name="fc_transportadora"]:checked').length;
             if (valTransportadora === 0 && $('input[name="fc_transportadora"]').length) {
-                alert('Selecione uma transportadora FreteClick');
+                alert('Selecione uma transportadora');
                 return false;
             }
         });

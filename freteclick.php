@@ -383,7 +383,7 @@ class freteclick extends CarrierModule {
     public function hookOrderConfirmation($params) {
         global $cookie;
         $params['objOrder']->setWsShippingNumber($cookie->delivery_order_id);
-        $params['objOrder']->save();
+        $params['objOrder']->save();        
         //$this->addQuoteOriginCompany($params['objOrder']);
         //$this->addQuoteDestinationClient($params['objOrder']);
     }
@@ -509,7 +509,7 @@ class freteclick extends CarrierModule {
         return $arrJson;
     }
 
-    public function calculaDimencoesCorreios($data) {
+    public function calculaDimensoesCorreios($data) {
         foreach ($data['product-package'] AS $p) {
             $total += $p['qtd'] * (str_replace(',', '.', $p['height']) * 100) * (str_replace(',', '.', $p['width']) * 100) * (str_replace(',', '.', $p['depth']));
         }
@@ -521,7 +521,7 @@ class freteclick extends CarrierModule {
     }
 
     public function calculaPrecoPrazo($data, $arrJson) {
-        $data = $this->calculaDimencoesCorreios($data);
+        $data = $this->calculaDimensoesCorreios($data);
         $dados = array(
             '4510' => 'PAC',
             '4014' => 'SEDEX'
