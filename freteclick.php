@@ -1,10 +1,8 @@
 <?php
-
 /**
  * Módulo para o calculo do frete usando o webservice do FreteClick
- * @author Ederson Ferreira (ederson.dev@gmail.com)
- * http://freteclick.com.br/carrier/search-city-origin.json
- * http://freteclick.com.br/carrier/search-city-destination.json
+ * @author Frete Click (contato@freteclick.com.br)
+ * @copyright 2017 Frete Click
  * 
  */
 // Avoid direct access to the file
@@ -24,12 +22,19 @@ class freteclick extends CarrierModule {
     public $url_add_quote_destination_client;
     public $url_add_quote_origin_company;
     public static $shippingCost;
+    public  $cookie;
 
     public function __construct() {
+
+
+        $this->cookie = new Cookie('Frete Click'); //make your own cookie
+        $this->cookie->setExpire(time() + 20 * 60); // 20 minutes for example
+        
+
         $this->name = 'freteclick';
         $this->tab = 'shipping_logistics';
-        $this->version = '1.0';
-        $this->author = 'Ederson Ferreira';
+        $this->version = '1.0.0';
+        $this->author = 'Frete Click';
         $this->bootstrap = true;
         parent::__construct();
         $this->displayName = $this->l('FreteClick');
@@ -78,14 +83,13 @@ class freteclick extends CarrierModule {
     }
 
     public function uninstall() {
-        global $cookie;
 
         if (!parent::uninstall() || !Configuration::deleteByName('FC_INFO_PROD') || !Configuration::deleteByName('FC_SHOP_CART') || !Configuration::deleteByName('FC_CITY_ORIGIN') || !$this->unregisterHook('updateCarrier') || !$this->unregisterHook('extraCarrier') || !$this->unregisterHook('DisplayRightColumnProduct') || !$this->unregisterHook('OrderConfirmation') || !$this->unregisterHook('displayShoppingCartFooter')) {
             return false;
         }
         $objFC = new Carrier((int) (Configuration::get('FC_CARRIER_ID')));
         if (Configuration::get('PS_CARRIER_DEFAULT') == (int) ($objFC->id)) {
-            $carriersD = Carrier::getCarriers($cookie->id_lang, true, false, false, NULL, PS_CARRIERS_AND_CARRIER_MODULES_NEED_RANGE);
+            $carriersD = Carrier::getCarriers($this->cookie->id_lang, true, false, false, NULL, PS_CARRIERS_AND_CARRIER_MODULES_NEED_RANGE);
             foreach ($carriersD as $carrierD) {
                 if ($carrierD['active'] AND ! $carrierD['deleted'] AND ( $carrierD['name'] != $this->_config['name'])) {
                     Configuration::updateValue('PS_CARRIER_DEFAULT', $carrierD['id_carrier']);
@@ -149,7 +153,7 @@ class freteclick extends CarrierModule {
             }
 
             // Copy Logo
-            if (!copy(dirname(__FILE__) . '/assets/img/' . $config['logo_img'], _PS_SHIP_IMG_DIR_ . '/' . (int) $carrier->id . '.jpg')) {
+            if (!copy(dirname(__FILE__) . '/views/img/' . $config['logo_img'], _PS_SHIP_IMG_DIR_ . '/' . (int) $carrier->id . '.jpg')) {
                 return false;
             }
 
@@ -162,7 +166,7 @@ class freteclick extends CarrierModule {
 
     public function getContent() {
         $this->context->controller->addJqueryUI('ui.autocomplete');
-        $this->context->controller->addJS($this->_path . 'assets/js/FreteClick.js');
+        $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         if (Tools::isSubmit('btnSubmit')) {
             $this->_postProcess();
 
@@ -313,8 +317,9 @@ class freteclick extends CarrierModule {
     }
 
     public function getOrderShippingCost($params, $shipping_cost) {
-        global $cookie;
-        if ($this->context->cart->id && !self::$shippingCost) {            
+
+        if ($this->context->cart->id && !self::$shippingCost) {
+            $total = 0;
             foreach ($this->context->cart->getProducts() as $product) {
                 $total += $product['total'];
             }
@@ -326,10 +331,10 @@ class freteclick extends CarrierModule {
                 'key' => Configuration::get('FC_API_KEY')
             );
             $this->getTransportadoras($arrPostFields);
-            self::$shippingCost = $cookie->fc_valorFrete;            
+            self::$shippingCost = $this->cookie->fc_valorFrete;
         }
 
-        return ( isset($cookie->fc_valorFrete) ? $cookie->fc_valorFrete : 0 );
+        return ( isset($this->cookie->fc_valorFrete) ? $this->cookie->fc_valorFrete : 0 );
     }
 
     public function getOrderShippingCostExternal($params) {
@@ -337,27 +342,27 @@ class freteclick extends CarrierModule {
     }
 
     public function hookDisplayRightColumnProduct($params) {
-        global $smarty, $cookie;
+        global $smarty;
 
         if (Configuration::get('FC_INFO_PROD') != '1') {
             return false;
         }
-        $this->context->controller->addJS($this->_path . 'assets/js/FreteClick.js');
+        $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
         $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
         $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
         $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
-        $smarty->assign('cep', $cookie->cep);
-        return $this->display(__FILE__, 'view/simularfrete.tpl');
+        $smarty->assign('cep', $this->cookie->cep);
+        return $this->display(__FILE__, 'views/templates/hook/simularfrete.tpl');
     }
 
     public function hookdisplayShoppingCartFooter($params) {
-        global $smarty, $cookie;
+        global $smarty;
 
         if (Configuration::get('FC_SHOP_CART') != '1') {
             return false;
         }
-        $this->context->controller->addJS($this->_path . 'assets/js/FreteClick.js');
+        $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
         $smarty->assign('cart_total', $this->context->cart->getOrderTotal());
         $smarty->assign('cart_product_names', $this->getListProductsName());
@@ -365,13 +370,13 @@ class freteclick extends CarrierModule {
         $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
         $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
         $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
-        $smarty->assign('cep', $cookie->cep);
-        return $this->display(__FILE__, 'view/simularfrete_cart.tpl');
+        $smarty->assign('cep', $this->cookie->cep);
+        return $this->display(__FILE__, 'views/templates/hook/simularfrete_cart.tpl');
     }
 
     public function hookextraCarrier($params) {
-        global $smarty, $cookie;
-        $this->context->controller->addJS($this->_path . 'assets/js/FreteClick.js');
+        global $smarty;
+        $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $arrSmarty = array(
             'display_name' => $this->displayName,
             'carrier_checked' => $params['cart']->id_carrier,
@@ -388,32 +393,30 @@ class freteclick extends CarrierModule {
                     'key' => Configuration::get('FC_API_KEY')
                 );
                 $arrSmarty['arr_transportadoras'] = $this->getTransportadoras($arrPostFields);
-                $arrSmarty['quote_id'] = ( isset($cookie->quote_id) ? $cookie->quote_id : null );
+                $arrSmarty['quote_id'] = ( isset($this->cookie->quote_id) ? $this->cookie->quote_id : null );
             }
         } catch (Exception $ex) {
             $arrSmarty['error_message'] = $ex->getMessage();
         }
-        $arrSmarty['cep'] = $cookie->cep;
+        $arrSmarty['cep'] = $this->cookie->cep;
         $smarty->assign($arrSmarty);
-        return $this->display(__FILE__, 'view/order_shipping.tpl');
+        return $this->display(__FILE__, 'views/templates/hook/order_shipping.tpl');
     }
 
     /**
      * Hook que será executado ao finalizar um pedido
      */
     public function hookOrderConfirmation($params) {
-        global $cookie;
-        $params['objOrder']->setWsShippingNumber($cookie->delivery_order_id);
+        $params['objOrder']->setWsShippingNumber($this->cookie->delivery_order_id);
         $params['objOrder']->save();
         $this->addQuoteOriginCompany($params['objOrder']);
         $this->addQuoteDestinationClient($params['objOrder']);
     }
 
     private function addQuoteDestinationClient($order) {
-        global $cookie;
-        $address = new Address(intval($order->id_address_delivery));
+        $address = new Address((int)$order->id_address_delivery);
         $customer = new Customer($order->id_customer);
-        $data['quote'] = $cookie->quote_id;
+        $data['quote'] = $this->cookie->quote_id;
         $data['complement'] = $address->address2;
         $data['street'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), $address->address1));
         $data['address-number'] = preg_replace('/[^0-9]/', '', $address->address1);
@@ -427,8 +430,8 @@ class freteclick extends CarrierModule {
         $data['country'] = $address->country;
         $data['company-alias'] = $address->company;
         $data['company-name'] = $address->company;
-        $data['ddd'] = substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
-        $data['phone'] = substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
+        $data['ddd'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
+        $data['phone'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
         if ($address->company) {
             $data['choose-client'] = 'company';
         } else {
@@ -448,16 +451,16 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
         curl_close($ch);
         return $resp;
     }
 
     private function addQuoteOriginCompany($order) {
-        global $cookie;
-        $address = new Address(intval($order->id_address_delivery));
+        $address = new Address((int)$order->id_address_delivery);
         $customer = new Customer($order->id_customer);
-        $data['quote'] = $cookie->quote_id;
+        $data = array();
+        $data['quote'] = $this->cookie->quote_id;
         $data['complement'] = $address->address2;
         $data['street'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), $address->address1));
         $data['address-number'] = preg_replace('/[^0-9]/', '', $address->address1);
@@ -470,8 +473,8 @@ class freteclick extends CarrierModule {
         $data['country'] = $address->country;
         $data['company-alias'] = $address->company;
         $data['company-name'] = $address->company;
-        $data['ddd'] = substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
-        $data['phone'] = substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
+        $data['ddd'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
+        $data['phone'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
         if ($address->company) {
             $data['choose-client'] = 'company';
         } else {
@@ -492,7 +495,7 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
         curl_close($ch);
         return $resp;
         /*
@@ -526,8 +529,6 @@ class freteclick extends CarrierModule {
     }
 
     public function getTransportadoras($postFields) {
-
-        global $cookie;
         foreach ($this->context->cart->getProducts() as $key => $product) {
             $postFields['product-package'][$key]['qtd'] = $product['cart_quantity'];
             $postFields['product-package'][$key]['weight'] = number_format($product['weight'], 10, ',', '');
@@ -535,9 +536,9 @@ class freteclick extends CarrierModule {
             $postFields['product-package'][$key]['width'] = number_format($product['width'] / 100, 10, ',', '');
             $postFields['product-package'][$key]['depth'] = number_format($product['depth'] / 100, 10, ',', '');
         }
-        $address = new Address(intval($this->context->cart->id_address_delivery));
+        $address = new Address((int)$this->context->cart->id_address_delivery);
         $postFields['cep'] = $address->postcode;
-        $cookie->cep = $address->postcode;
+        $this->cookie->cep = $address->postcode;
         $postFields['city-destination-id'] = $this->getCityFromCep($address->postcode)->id;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url_shipping_quote);
@@ -545,11 +546,11 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
         curl_close($ch);
         $arrJson = $this->filterJson($resp);
         $arrJson = $this->orderByPrice($this->calculaPrecoPrazo($postFields, $arrJson));
-        $cookie->fc_valorFrete = $arrJson->response->data->quote[0]->total;        
+        $this->cookie->fc_valorFrete = $arrJson->response->data->quote[0]->total;
         foreach ($arrJson->response->data->quote as $key => $quote) {
             $quote_price = number_format($quote->total, 2, ',', '.');
             $arrJson->response->data->quote[$key]->raw_total = str_replace(',', '.', $quote->total);
@@ -559,8 +560,9 @@ class freteclick extends CarrierModule {
         if ($arrJson->response->success === false || $arrJson->response->data === false) {
             throw new Exception('Nenhuma transportadora disponível.');
         }
-        global $cookie;
-        $cookie->delivery_order_id = $arrJson->response->data->id;
+
+        $this->cookie->delivery_order_id = $arrJson->response->data->id;
+        $this->cookie->write();
         return $arrJson;
     }
 
@@ -574,6 +576,7 @@ class freteclick extends CarrierModule {
     }
 
     public function calculaDimensoesCorreios($data) {
+        $total = 0;
         foreach ($data['product-package'] AS $p) {
             $total += $p['qtd'] * (str_replace(',', '.', $p['height']) * 100) * (str_replace(',', '.', $p['width']) * 100) * (str_replace(',', '.', $p['depth']));
         }
@@ -603,7 +606,7 @@ class freteclick extends CarrierModule {
             'nVlLargura' => (string) ($data['width'] > 16 ? $data['width'] : 16),
             'nVlDiametro' => '0',
             'sCdMaoPropria' => 'n',
-            'nVlValorDeclarado' => $data['product-total-price'],
+            'nVlValorDeclarado' => str_replace(',', '.', $data['product-total-price']),
             'sCdAvisoRecebimento' => 'n'
         );
 
@@ -615,11 +618,11 @@ class freteclick extends CarrierModule {
                 if (!$retorno->MsgErro) {
                     $arrJson->response->data->quote[] = (object) array(
                                 "carrier-alias" => $dados[$retorno->Codigo],
-                                "carrier-logo" => $this->_path . 'assets/img/' . $dados[$retorno->Codigo] . '.png',
+                                "carrier-logo" => $this->_path . 'views/img/' . $dados[$retorno->Codigo] . '.png',
                                 "carrier-name" => $dados[$retorno->Codigo],
                                 "deadline" => $retorno->PrazoEntrega,
                                 "delivery-restricted" => false,
-                                "logo" => $this->_path . 'assets/img/' . $dados[$retorno->Codigo] . '.png',
+                                "logo" => $this->_path . 'views/img/' . $dados[$retorno->Codigo] . '.png',
                                 'total' => $retorno->Valor
                     );
                 }
@@ -637,7 +640,7 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array('cep' => $cep)));
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
         curl_close($ch);
         $arrData = $this->filterJson($resp);
         if ($arrData->response->success === false || $arrData->response->data === false || $arrData->response->data->id === false) {

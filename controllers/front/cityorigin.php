@@ -1,8 +1,8 @@
 <?php
 /**
- * Description of validatedoc
- *
- * @author Ederson Ferreira <ederson.dev@gmail.com>
+ * Módulo para o calculo do frete usando o webservice do FreteClick
+ * @author Frete Click (contato@freteclick.com.br)
+ * @copyright 2017 Frete Click
  */
 class FreteclickCityoriginModuleFrontController extends ModuleFrontController
 {
@@ -15,7 +15,7 @@ class FreteclickCityoriginModuleFrontController extends ModuleFrontController
       curl_setopt($ch, CURLOPT_HTTPGET, true);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);      
       $resp = curl_exec($ch);
-      $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      
       curl_close($ch);
       echo $this->filterJson($resp);exit;
     }catch(Exception $ex){

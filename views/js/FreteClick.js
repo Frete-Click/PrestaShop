@@ -1,3 +1,8 @@
+/**
+ * Módulo para o calculo do frete usando o webservice do FreteClick
+ * @author Frete Click (contato@freteclick.com.br)
+ * 
+ */
 function maskCep(t, mask) {
     var i = t.value.length;
     var saida = mask.substring(1, 0);
@@ -27,8 +32,7 @@ jQuery(function ($) {
         $("#quantity_wanted").change(function () {
             $('[name="product-package[0][qtd]"]').attr('value', $(this).val());
             var price = $('#product-total-price').data('value') * $(this).val();
-            //$('#product-total-price').attr('value', price.toString().replace('.', ','));
-            $('#product-total-price').attr('value', price);
+            $('#product-total-price').attr('value', price.toString().replace('.', ','));
         });
 
 
@@ -83,13 +87,23 @@ jQuery(function ($) {
                     });
                 }});
         });
+
+        $('#fk-cep').keydown(function (event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                return false;
+            }
+        });
+
         $('#btCalcularFrete').click(function () {
             var $btn = $(this).button('loading');
             $('#resultado-frete').hide();
             $("#frete-valores tbody").empty();
             var inputForm = $('#calcular_frete').serialize();
             $.ajax({
-                url: $('#calcular_frete').attr('action'),
+                url: $('#calcular_frete').attr('data-action'),
                 type: 'post',
                 dataType: 'json',
                 data: inputForm,
