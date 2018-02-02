@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Módulo para o calculo do frete usando o webservice do FreteClick
  * @author Frete Click (contato@freteclick.com.br)
@@ -22,14 +23,16 @@ class freteclick extends CarrierModule {
     public $url_add_quote_destination_client;
     public $url_add_quote_origin_company;
     public static $shippingCost;
-    public  $cookie;
+    public $cookie;
+    public $module_key;
 
     public function __construct() {
 
 
         $this->cookie = new Cookie('Frete Click'); //make your own cookie
         $this->cookie->setExpire(time() + 20 * 60); // 20 minutes for example
-        
+        $this->module_key = '787992febc148fba30e5885d08c14f8b';
+
 
         $this->name = 'freteclick';
         $this->tab = 'shipping_logistics';
@@ -414,7 +417,7 @@ class freteclick extends CarrierModule {
     }
 
     private function addQuoteDestinationClient($order) {
-        $address = new Address((int)$order->id_address_delivery);
+        $address = new Address((int) $order->id_address_delivery);
         $customer = new Customer($order->id_customer);
         $data['quote'] = $this->cookie->quote_id;
         $data['complement'] = $address->address2;
@@ -451,13 +454,13 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $resp = curl_exec($ch);
-        
+
         curl_close($ch);
         return $resp;
     }
 
     private function addQuoteOriginCompany($order) {
-        $address = new Address((int)$order->id_address_delivery);
+        $address = new Address((int) $order->id_address_delivery);
         $customer = new Customer($order->id_customer);
         $data = array();
         $data['quote'] = $this->cookie->quote_id;
@@ -495,7 +498,7 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $resp = curl_exec($ch);
-        
+
         curl_close($ch);
         return $resp;
         /*
@@ -536,7 +539,7 @@ class freteclick extends CarrierModule {
             $postFields['product-package'][$key]['width'] = number_format($product['width'] / 100, 10, ',', '');
             $postFields['product-package'][$key]['depth'] = number_format($product['depth'] / 100, 10, ',', '');
         }
-        $address = new Address((int)$this->context->cart->id_address_delivery);
+        $address = new Address((int) $this->context->cart->id_address_delivery);
         $postFields['cep'] = $address->postcode;
         $this->cookie->cep = $address->postcode;
         $postFields['city-destination-id'] = $this->getCityFromCep($address->postcode)->id;
@@ -546,7 +549,7 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
         $resp = curl_exec($ch);
-        
+
         curl_close($ch);
         $arrJson = $this->filterJson($resp);
         $arrJson = $this->orderByPrice($this->calculaPrecoPrazo($postFields, $arrJson));
@@ -640,7 +643,7 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array('cep' => $cep)));
         $resp = curl_exec($ch);
-        
+
         curl_close($ch);
         $arrData = $this->filterJson($resp);
         if ($arrData->response->success === false || $arrData->response->data === false || $arrData->response->data->id === false) {
