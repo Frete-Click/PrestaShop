@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Módulo para o calculo do frete usando o webservice do FreteClick
- * @author Frete Click (contato@freteclick.com.br)
- * @copyright 2017 Frete Click
+ * Description of validatedoc
+ *
+ * @author Ederson Ferreira <ederson.dev@gmail.com>
  */
 class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController {
 
@@ -13,14 +13,14 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
         try {
             $city_destination_id = $this->getCity();
             if ($city_destination_id) {
-                $this->module->cookie->cep = Tools::getValue('cep');
+                $this->module->cookie->cep = $_POST['cep'];
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $this->module->url_shipping_quote);
                 curl_setopt($ch, CURLOPT_POST, true);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array_merge($_POST, array('city-destination-id' => $city_destination_id, 'key' => Configuration::get('FC_API_KEY')))));
                 $resp = curl_exec($ch);
-                
+                $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $arrJson = $this->module->filterJson($resp);
                 $arrJson = $this->module->orderByPrice($this->module->calculaPrecoPrazo($_POST, $arrJson));
@@ -48,7 +48,7 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
         curl_setopt($ch, CURLOPT_HTTPGET, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $resp = curl_exec($ch);
-        
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         $arrJson = Tools::jsonDecode($resp);
         if (!$arrJson) {

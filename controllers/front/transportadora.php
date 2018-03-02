@@ -1,9 +1,9 @@
 <?php
+
 /**
- * Módulo para o calculo do frete usando o webservice do FreteClick
- * @author Frete Click (contato@freteclick.com.br)
- * @copyright 2017 Frete Click
- * 
+ * Description of validatedoc
+ *
+ * @author Ederson Ferreira <ederson.dev@gmail.com>
  */
 class FreteclickTransportadoraModuleFrontController extends ModuleFrontController {
 
@@ -14,7 +14,7 @@ class FreteclickTransportadoraModuleFrontController extends ModuleFrontControlle
         $this->module->cookie->write();
         try {
             $this->chooseQuote();
-            echo Tools::jsonEncode(array('status' => true));
+            echo Tools::jsonEncode(['status' => true]);
         } catch (Exception $ex) {
             echo $ex->getMessage();
         }
@@ -29,7 +29,7 @@ class FreteclickTransportadoraModuleFrontController extends ModuleFrontControlle
             curl_setopt($ch, CURLOPT_HTTPGET, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $resp = curl_exec($ch);
-            
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
             $arrData = $this->module->filterJson($resp);
             if ($arrData->response->success === false) {

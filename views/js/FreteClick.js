@@ -1,8 +1,3 @@
-/**
- * Módulo para o calculo do frete usando o webservice do FreteClick
- * @author Frete Click (contato@freteclick.com.br)
- * 
- */
 function maskCep(t, mask) {
     var i = t.value.length;
     var saida = mask.substring(1, 0);
