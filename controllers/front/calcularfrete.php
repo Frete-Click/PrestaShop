@@ -8,7 +8,7 @@
 class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController {
 
     public function initContent() {
-        
+
         $arrRetorno = array();
         try {
             $city_destination_id = $this->getCity();
@@ -18,7 +18,7 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
                 curl_setopt($ch, CURLOPT_URL, $this->module->url_shipping_quote);
                 curl_setopt($ch, CURLOPT_POST, true);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array_merge($_POST, array('city-destination-id' => $city_destination_id, 'key' => Configuration::get('FC_API_KEY')))));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array_merge($_POST, array('city-destination-id' => $city_destination_id, 'api-key' => Configuration::get('FC_API_KEY')))));
                 $resp = curl_exec($ch);
                 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
@@ -44,7 +44,7 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
 
     public function getCity() {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->module->url_search_city_from_cep . '?' . http_build_query($_POST, array('key' => Configuration::get('FC_API_KEY'))));
+        curl_setopt($ch, CURLOPT_URL, $this->module->url_search_city_from_cep . '?' . http_build_query($_POST, array('api-key' => Configuration::get('FC_API_KEY'))));
         curl_setopt($ch, CURLOPT_HTTPGET, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $resp = curl_exec($ch);

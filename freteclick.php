@@ -48,14 +48,14 @@ class freteclick extends CarrierModule {
                 $this->warning = $this->l('A cidade de origem precisa estar configurada no módulo');
             }
         }
-        $this->url_shipping_quote = 'https://www.freteclick.com.br/sales/shipping-quote.json';
-        $this->url_city_origin = 'https://www.freteclick.com.br/carrier/search-city-origin.json';
-        $this->url_city_destination = 'https://www.freteclick.com.br/carrier/search-city-destination.json';
-        $this->url_search_city_from_cep = 'https://www.freteclick.com.br/carrier/search-city-from-cep.json';
-        $this->url_choose_quote = 'https://www.freteclick.com.br/sales/choose-quote.json';
+        $this->url_shipping_quote = 'https://api.freteclick.com.br/sales/shipping-quote.json';
+        $this->url_city_origin = 'https://api.freteclick.com.br/carrier/search-city-origin.json';
+        $this->url_city_destination = 'https://api.freteclick.com.br/carrier/search-city-destination.json';
+        $this->url_search_city_from_cep = 'https://api.freteclick.com.br/carrier/search-city-from-cep.json';
+        $this->url_choose_quote = 'https://api.freteclick.com.br/sales/choose-quote.json';
         $this->url_api_correios = 'http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx?WSDL';
-        $this->url_add_quote_destination_client = 'https://www.freteclick.com.br/sales/add-quote-destination-client.json';
-        $this->url_add_quote_origin_company = 'https://www.freteclick.com.br/sales/add-quote-origin-company.json.json';
+        $this->url_add_quote_destination_client = 'https://api.freteclick.com.br/sales/add-quote-destination-client.json';
+        $this->url_add_quote_origin_company = 'https://api.freteclick.com.br/sales/add-quote-origin-company.json.json';
     }
 
     public function install() {
@@ -329,7 +329,7 @@ class freteclick extends CarrierModule {
                 'city-origin-id' => Configuration::get('FC_CITY_ORIGIN'),
                 'product-type' => $this->getListProductsName(),
                 'product-total-price' => $total,
-                'key' => Configuration::get('FC_API_KEY')
+                'api-key' => Configuration::get('FC_API_KEY')
             );
             $this->getTransportadoras($arrPostFields);
             self::$shippingCost = $this->cookie->fc_valorFrete;
@@ -391,7 +391,7 @@ class freteclick extends CarrierModule {
                     'city-origin-id' => Configuration::get('FC_CITY_ORIGIN'),
                     'product-type' => $this->getListProductsName(),
                     'product-total-price' => $this->context->cart->getOrderTotal(),
-                    'key' => Configuration::get('FC_API_KEY')
+                    'api-key' => Configuration::get('FC_API_KEY')
                 );
                 $arrSmarty['arr_transportadoras'] = $this->getTransportadoras($arrPostFields);
                 $arrSmarty['quote_id'] = ( isset($this->cookie->quote_id) ? $this->cookie->quote_id : null );
@@ -447,7 +447,7 @@ class freteclick extends CarrierModule {
           $data['client-document'] = '321.156.928-61';
          */
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url_add_quote_destination_client . '?key=' . Configuration::get('FC_API_KEY'));
+        curl_setopt($ch, CURLOPT_URL, $this->url_add_quote_destination_client . '?api-key=' . Configuration::get('FC_API_KEY'));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
@@ -490,7 +490,7 @@ class freteclick extends CarrierModule {
          */
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url_add_quote_origin_company . '?key=' . Configuration::get('FC_API_KEY'));
+        curl_setopt($ch, CURLOPT_URL, $this->url_add_quote_origin_company . '?api-key=' . Configuration::get('FC_API_KEY'));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
