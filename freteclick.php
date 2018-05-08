@@ -24,14 +24,15 @@ class freteclick extends CarrierModule {
     public $url_add_quote_destination_client;
     public $url_add_quote_origin_company;
     public static $shippingCost;
-    public  $cookie;
+    public $cookie;
+    protected static $error;
 
     public function __construct() {
 
 
         $this->cookie = new Cookie('Frete Click'); //make your own cookie
         $this->cookie->setExpire(time() + 20 * 60); // 20 minutes for example
-        
+
 
         $this->name = 'freteclick';
         $this->tab = 'shipping_logistics';
@@ -294,7 +295,7 @@ class freteclick extends CarrierModule {
     private function _postProcess() {
         try {
             if (empty(Tools::getValue('FC_CITY_ORIGIN'))) {
-                throw new Exception('O campo cidade de origem é obrigatório.');
+                $this->addError('O campo cidade de origem é obrigatório.');
             }
             Configuration::updateValue('FC_CITY_ORIGIN', Tools::getValue('FC_CITY_ORIGIN'));
             Configuration::updateValue('FC_CITY_ORIGIN_NAME', Tools::getValue('FC_CITY_ORIGIN_NAME'));
@@ -558,7 +559,7 @@ class freteclick extends CarrierModule {
         }
 
         if ($arrJson->response->success === false || $arrJson->response->data === false) {
-            throw new Exception('Nenhuma transportadora disponível.');
+            $this->addError('Nenhuma transportadora disponível.');
         }
 
         $this->cookie->delivery_order_id = $arrJson->response->data->id;
@@ -643,26 +644,45 @@ class freteclick extends CarrierModule {
         curl_close($ch);
         $arrData = $this->filterJson($resp);
         if ($arrData->response->success === false || $arrData->response->data === false || $arrData->response->data->id === false) {
-            throw new Exception('Nenhuma transportadora disponível para este CEP: ' . $cep);
+            $this->addError('Nenhuma transportadora disponível para este CEP: ' . $cep);
         }
 
-        return $arrData->response->data;
+        return $this->getErrors() ? : $arrData->response->data;
     }
 
     public function filterJson($json) {
         $arrJson = Tools::jsonDecode($json);
         if (!$arrJson) {
-            throw new Exception('Erro ao recuperar dados');
+            $this->addError('Erro ao recuperar dados');
         }
         if ($arrJson->response->success === false) {
             if ($arrJson->response->error) {
                 foreach ($arrJson->response->error as $error) {
-                    throw new Exception($error->message);
+                    $this->addError($error->message);
                 }
             }
-            throw new Exception('Erro ao recuperar dados');
+            $this->addError('Erro ao recuperar dados');
         }
-        return $arrJson;
+        return $this->getErrors() ? : $arrJson;
+    }
+
+    public function getErrors() {
+        return self::$error ? array(
+            'response' => array(
+                'data' => 'false',
+                'count' => 0,
+                'success' => false,
+                'error' => self::$error
+            )
+                ) : false;
+    }
+
+    public function addError($error) {
+        self::$error[] = array(
+            'code' => md5($error),
+            'message' => $error
+        );
+        return $this->getErrors();
     }
 
 }

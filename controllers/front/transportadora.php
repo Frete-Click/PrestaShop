@@ -33,7 +33,8 @@ class FreteclickTransportadoraModuleFrontController extends ModuleFrontControlle
             curl_close($ch);
             $arrData = $this->module->filterJson($resp);
             if ($arrData->response->success === false) {
-                throw new Exception('Erro ao selecionar a cotação');
+                 $this->module->addError('Erro ao selecionar a cotação');
+                 return;
             }
         }
         return true;

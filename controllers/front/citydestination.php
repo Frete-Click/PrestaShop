@@ -30,16 +30,16 @@ class FreteclickCitydestinationModuleFrontController extends ModuleFrontControll
   {
     $arrJson = Tools::jsonDecode($json);
     if(!$arrJson){
-      throw new Exception('Erro ao recuperar dados');
+      $this->module->addError('Erro ao recuperar dados');
     }
     if($arrJson->response->success === false){
       if($arrJson->response->error){
         foreach($arrJson->response->error as $error){
-          throw new Exception($error->message);
+          $this->module->addError($error->message);
         }
       }
-      throw new Exception('Erro ao recuperar dados');
+      $this->module->addError('Erro ao recuperar dados');
     }        
-    return Tools::jsonEncode($arrJson);
+    return Tools::jsonEncode($this->module->getErrors()?:$arrJson);
   }
 }

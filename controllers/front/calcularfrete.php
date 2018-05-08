@@ -52,20 +52,20 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
         curl_close($ch);
         $arrJson = Tools::jsonDecode($resp);
         if (!$arrJson) {
-            throw new Exception('Erro ao recuperar dados');
+            $this->module->addError('Erro ao recuperar dados');
         }
         if ($arrJson->response->success === false) {
             if ($arrJson->response->error) {
                 foreach ($arrJson->response->error as $error) {
-                    throw new Exception($error->message);
+                   $this->module->addError($error->message);
                 }
             }
-            throw new Exception('Erro ao recuperar dados');
+            $this->module->addError('Erro ao recuperar dados');
         }
         if ($arrJson->response->data->id) {
             return $arrJson->response->data->id;
         } else {
-            throw new Exception('Cidade não encontrada à partir deste CEP');
+            $this->module->addError('Cidade não encontrada à partir deste CEP');
         }
     }
 
