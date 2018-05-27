@@ -1,13 +1,15 @@
 <?php
-
 /**
- * Description of validatedoc
- *
- * @author Ederson Ferreira <ederson.dev@gmail.com>
+ *  Módulo para o calculo do frete usando o webservice do FreteClick
+ *  @author    Ederson Ferreira (ederson.dev@gmail.com)
+ *  @copyright 2010-2015 FreteClick
+ *  @license   LICENSE
  */
-class FreteclickCityoriginModuleFrontController extends ModuleFrontController {
-
-    public function initContent() {
+ 
+class FreteclickCityoriginModuleFrontController extends ModuleFrontController
+{
+    public function initContent()
+    {
         $arrRetorno = array();
         try {
             $ch = curl_init();
@@ -15,7 +17,6 @@ class FreteclickCityoriginModuleFrontController extends ModuleFrontController {
             curl_setopt($ch, CURLOPT_HTTPGET, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $resp = curl_exec($ch);
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
             echo $this->filterJson($resp);
             exit;
@@ -26,7 +27,8 @@ class FreteclickCityoriginModuleFrontController extends ModuleFrontController {
         }
     }
 
-    public function filterJson($json) {
+    public function filterJson($json)
+    {
         $arrJson = Tools::jsonDecode($json);
         if (!$arrJson) {
             $arrJson = $this->module->addError('Erro ao recuperar dados');
@@ -41,5 +43,4 @@ class FreteclickCityoriginModuleFrontController extends ModuleFrontController {
         }
         return Tools::jsonEncode($this->module->getErrors()? : $arrJson);
     }
-
 }
