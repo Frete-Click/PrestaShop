@@ -1,3 +1,9 @@
+/**
+ * Módulo para o calculo do frete usando o webservice do FreteClick
+ *  @author    Ederson Ferreira (ederson.dev@gmail.com)
+ *  @copyright 2010-2015 FreteClick
+ *  @license   LICENSE
+ */
 function maskCep(t, mask) {
     var i = t.value.length;
     var saida = mask.substring(1, 0);

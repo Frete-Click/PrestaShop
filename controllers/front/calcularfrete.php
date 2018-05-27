@@ -1,26 +1,34 @@
 <?php
-
 /**
- * Description of validatedoc
- *
- * @author Ederson Ferreira <ederson.dev@gmail.com>
+ *  Módulo para o calculo do frete usando o webservice do FreteClick
+ *  @author    Ederson Ferreira (ederson.dev@gmail.com)
+ *  @copyright 2010-2015 FreteClick
+ *  @license   LICENSE
  */
-class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController {
 
-    public function initContent() {
-
+class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
+{
+    public function initContent()
+    {
         $arrRetorno = array();
         try {
             $city_destination_id = $this->getCity();
             if ($city_destination_id) {
-                $this->module->cookie->cep = $_POST['cep'];
+                $this->module->cookie->cep = Tools::getValue('cep');
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $this->module->url_shipping_quote);
                 curl_setopt($ch, CURLOPT_POST, true);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array_merge($_POST, array('city-destination-id' => $city_destination_id, 'api-key' => Configuration::get('FC_API_KEY')))));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(
+                    array_merge(
+                        $_POST,
+                        array(
+                            'city-destination-id' => $city_destination_id,
+                            'api-key' => Configuration::get('FC_API_KEY')
+                        )
+                    )
+                ));
                 $resp = curl_exec($ch);
-                $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $arrJson = $this->module->filterJson($resp);
                 $arrJson = $this->module->orderByPrice($this->module->calculaPrecoPrazo($_POST, $arrJson));
@@ -41,14 +49,22 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
             exit;
         }
     }
-
-    public function getCity() {
+    public function getCity()
+    {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->module->url_search_city_from_cep . '?' . http_build_query($_POST, array('api-key' => Configuration::get('FC_API_KEY'))));
+        curl_setopt(
+            $ch,
+            CURLOPT_URL,
+            $this->module->url_search_city_from_cep . '?' . http_build_query(
+                $_POST,
+                array(
+                    'api-key' => Configuration::get('FC_API_KEY')
+                )
+            )
+        );
         curl_setopt($ch, CURLOPT_HTTPGET, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         $arrJson = Tools::jsonDecode($resp);
         if (!$arrJson) {
@@ -57,7 +73,7 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
         if ($arrJson->response->success === false) {
             if ($arrJson->response->error) {
                 foreach ($arrJson->response->error as $error) {
-                   $this->module->addError($error->message);
+                    $this->module->addError($error->message);
                 }
             }
             $this->module->addError('Erro ao recuperar dados');
@@ -68,5 +84,4 @@ class FreteclickCalcularfreteModuleFrontController extends ModuleFrontController
             $this->module->addError('Cidade não encontrada à partir deste CEP');
         }
     }
-
 }

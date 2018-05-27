@@ -1,18 +1,17 @@
 <?php
-
 /**
- * Módulo para o calculo do frete usando o webservice do FreteClick
- * @author Ederson Ferreira (ederson.dev@gmail.com)
- * http://freteclick.com.br/carrier/search-city-origin.json
- * http://freteclick.com.br/carrier/search-city-destination.json
- * 
+ *  Módulo para o calculo do frete usando o webservice do FreteClick
+ *  @author    Ederson Ferreira (ederson.dev@gmail.com)
+ *  @copyright 2010-2015 FreteClick
+ *  @license   LICENSE
  */
+ 
 // Avoid direct access to the file
-if (!defined('_PS_VERSION_'))
+if (!defined('_PS_VERSION_')) {
     exit;
-
-class freteclick extends CarrierModule {
-
+}
+class FreteClick extends CarrierModule
+{
     public $id_carrier;
     private $_html = '';
     private $_postErrors = array();
@@ -27,12 +26,11 @@ class freteclick extends CarrierModule {
     public $cookie;
     protected static $error;
 
-    public function __construct() {
-
-
+    public function __construct()
+    {
+		$this->module_key =  '787992febc148fba30e5885d08c14f8b';
         $this->cookie = new Cookie('Frete Click'); //make your own cookie
         $this->cookie->setExpire(time() + 20 * 60); // 20 minutes for example
-
 
         $this->name = 'freteclick';
         $this->tab = 'shipping_logistics';
@@ -59,7 +57,8 @@ class freteclick extends CarrierModule {
         $this->url_add_quote_origin_company = 'https://api.freteclick.com.br/sales/add-quote-origin-company.json.json';
     }
 
-    public function install() {
+    public function install()
+    {
         $carrierConfig = array(
             'name' => 'FreteClick',
             'id_tax_rules_group' => 0,
@@ -85,16 +84,16 @@ class freteclick extends CarrierModule {
         return true;
     }
 
-    public function uninstall() {
-
+    public function uninstall()
+    {
         if (!parent::uninstall() || !Configuration::deleteByName('FC_INFO_PROD') || !Configuration::deleteByName('FC_SHOP_CART') || !Configuration::deleteByName('FC_CITY_ORIGIN') || !$this->unregisterHook('updateCarrier') || !$this->unregisterHook('extraCarrier') || !$this->unregisterHook('DisplayRightColumnProduct') || !$this->unregisterHook('OrderConfirmation') || !$this->unregisterHook('displayShoppingCartFooter')) {
             return false;
         }
         $objFC = new Carrier((int) (Configuration::get('FC_CARRIER_ID')));
         if (Configuration::get('PS_CARRIER_DEFAULT') == (int) ($objFC->id)) {
-            $carriersD = Carrier::getCarriers($this->cookie->id_lang, true, false, false, NULL, PS_CARRIERS_AND_CARRIER_MODULES_NEED_RANGE);
+            $carriersD = Carrier::getCarriers($this->cookie->id_lang, true, false, false, null, PS_CARRIERS_AND_CARRIER_MODULES_NEED_RANGE);
             foreach ($carriersD as $carrierD) {
-                if ($carrierD['active'] AND ! $carrierD['deleted'] AND ( $carrierD['name'] != $this->_config['name'])) {
+                if ($carrierD['active'] and ! $carrierD['deleted'] and ( $carrierD['name'] != $this->_config['name'])) {
                     Configuration::updateValue('PS_CARRIER_DEFAULT', $carrierD['id_carrier']);
                 }
             }
@@ -108,7 +107,8 @@ class freteclick extends CarrierModule {
         return true;
     }
 
-    public static function installExternalCarrier($config) {
+    public static function installExternalCarrier($config)
+    {
         $carrier = new Carrier();
         $carrier->name = $config['name'];
         $carrier->id_tax_rules_group = $config['id_tax_rules_group'];
@@ -151,8 +151,8 @@ class freteclick extends CarrierModule {
             $zones = Zone::getZones(true);
             foreach ($zones as $zone) {
                 Db::getInstance()->autoExecute(_DB_PREFIX_ . 'carrier_zone', array('id_carrier' => (int) ($carrier->id), 'id_zone' => (int) ($zone['id_zone'])), 'INSERT');
-                Db::getInstance()->autoExecuteWithNullValues(_DB_PREFIX_ . 'delivery', array('id_carrier' => (int) ($carrier->id), 'id_range_price' => (int) ($rangePrice->id), 'id_range_weight' => NULL, 'id_zone' => (int) ($zone['id_zone']), 'price' => '0'), 'INSERT');
-                Db::getInstance()->autoExecuteWithNullValues(_DB_PREFIX_ . 'delivery', array('id_carrier' => (int) ($carrier->id), 'id_range_price' => NULL, 'id_range_weight' => (int) ($rangeWeight->id), 'id_zone' => (int) ($zone['id_zone']), 'price' => '0'), 'INSERT');
+                Db::getInstance()->autoExecuteWithNullValues(_DB_PREFIX_ . 'delivery', array('id_carrier' => (int) ($carrier->id), 'id_range_price' => (int) ($rangePrice->id), 'id_range_weight' => null, 'id_zone' => (int) ($zone['id_zone']), 'price' => '0'), 'INSERT');
+                Db::getInstance()->autoExecuteWithNullValues(_DB_PREFIX_ . 'delivery', array('id_carrier' => (int) ($carrier->id), 'id_range_price' => null, 'id_range_weight' => (int) ($rangeWeight->id), 'id_zone' => (int) ($zone['id_zone']), 'price' => '0'), 'INSERT');
             }
 
             // Copy Logo
@@ -167,7 +167,8 @@ class freteclick extends CarrierModule {
         return false;
     }
 
-    public function getContent() {
+    public function getContent()
+    {
         $this->context->controller->addJqueryUI('ui.autocomplete');
         $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         if (Tools::isSubmit('btnSubmit')) {
@@ -184,7 +185,8 @@ class freteclick extends CarrierModule {
         return $this->_html;
     }
 
-    public function renderForm() {
+    public function renderForm()
+    {
         $fields_form = array(
             'form' => array(
                 'legend' => array(
@@ -281,7 +283,8 @@ class freteclick extends CarrierModule {
         return $helper->generateForm(array($fields_form));
     }
 
-    private function getConfigFieldsValues() {
+    private function getConfigFieldsValues()
+    {
         $values = array(
             'FC_CITY_ORIGIN' => Tools::getValue('FC_CITY_ORIGIN', Configuration::get('FC_CITY_ORIGIN')),
             'FC_CITY_ORIGIN_NAME' => Tools::getValue('FC_CITY_ORIGIN_NAME', Configuration::get('FC_CITY_ORIGIN_NAME')),
@@ -292,7 +295,8 @@ class freteclick extends CarrierModule {
         return $values;
     }
 
-    private function _postProcess() {
+    private function _postProcess()
+    {
         try {
             if (empty(Tools::getValue('FC_CITY_ORIGIN'))) {
                 $this->addError('O campo cidade de origem é obrigatório.');
@@ -313,14 +317,16 @@ class freteclick extends CarrierModule {
      * *
      */
 
-    public function hookupdateCarrier($params) {
+    public function hookupdateCarrier($params)
+    {
         if ((int) ($params['id_carrier']) == (int) (Configuration::get('FC_CARRIER_ID'))) {
             Configuration::updateValue('FC_CARRIER_ID', (int) ($params['carrier']->id));
         }
     }
 
-    public function getOrderShippingCost($params, $shipping_cost) {
-
+    public function getOrderShippingCost($params, $shipping_cost)
+    {
+        $total = array();
         if ($this->context->cart->id && !self::$shippingCost) {
             foreach ($this->context->cart->getProducts() as $product) {
                 $total += $product['total'];
@@ -339,12 +345,14 @@ class freteclick extends CarrierModule {
         return ( isset($this->cookie->fc_valorFrete) ? $this->cookie->fc_valorFrete : 0 );
     }
 
-    public function getOrderShippingCostExternal($params) {
+    public function getOrderShippingCostExternal($params)
+    {
         return 0;
     }
 
-    public function hookDisplayRightColumnProduct($params) {
-        global $smarty;
+    public function hookDisplayRightColumnProduct($params)
+    {
+        $smarty = $this->smarty;
 
         if (Configuration::get('FC_INFO_PROD') != '1') {
             return false;
@@ -358,8 +366,9 @@ class freteclick extends CarrierModule {
         return $this->display(__FILE__, 'views/templates/hook/simularfrete.tpl');
     }
 
-    public function hookdisplayShoppingCartFooter($params) {
-        global $smarty;
+    public function hookdisplayShoppingCartFooter($params)
+    {
+        $smarty = $this->smarty;
 
         if (Configuration::get('FC_SHOP_CART') != '1') {
             return false;
@@ -376,8 +385,9 @@ class freteclick extends CarrierModule {
         return $this->display(__FILE__, 'views/templates/hook/simularfrete_cart.tpl');
     }
 
-    public function hookextraCarrier($params) {
-        global $smarty;
+    public function hookextraCarrier($params)
+    {
+        $smarty = $this->smarty;
         $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $arrSmarty = array(
             'display_name' => $this->displayName,
@@ -408,15 +418,18 @@ class freteclick extends CarrierModule {
     /**
      * Hook que será executado ao finalizar um pedido
      */
-    public function hookOrderConfirmation($params) {
+    public function hookOrderConfirmation($params)
+    {
         $params['objOrder']->setWsShippingNumber($this->cookie->delivery_order_id);
         $params['objOrder']->save();
         $this->addQuoteOriginCompany($params['objOrder']);
         $this->addQuoteDestinationClient($params['objOrder']);
     }
 
-    private function addQuoteDestinationClient($order) {
-        $address = new Address(intval($order->id_address_delivery));
+    private function addQuoteDestinationClient($order)
+    {
+        $data = array();
+        $address = new Address((int)$order->id_address_delivery);
         $customer = new Customer($order->id_customer);
         $data['quote'] = $this->cookie->quote_id;
         $data['complement'] = $address->address2;
@@ -432,8 +445,8 @@ class freteclick extends CarrierModule {
         $data['country'] = $address->country;
         $data['company-alias'] = $address->company;
         $data['company-name'] = $address->company;
-        $data['ddd'] = substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
-        $data['phone'] = substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
+        $data['ddd'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
+        $data['phone'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
         if ($address->company) {
             $data['choose-client'] = 'company';
         } else {
@@ -453,13 +466,14 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         return $resp;
     }
 
-    private function addQuoteOriginCompany($order) {
-        $address = new Address(intval($order->id_address_delivery));
+    private function addQuoteOriginCompany($order)
+    {
+        $data = array();
+        $address = new Address((int)$order->id_address_delivery);
         $customer = new Customer($order->id_customer);
         $data['quote'] = $this->cookie->quote_id;
         $data['complement'] = $address->address2;
@@ -474,8 +488,8 @@ class freteclick extends CarrierModule {
         $data['country'] = $address->country;
         $data['company-alias'] = $address->company;
         $data['company-name'] = $address->company;
-        $data['ddd'] = substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
-        $data['phone'] = substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
+        $data['ddd'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
+        $data['phone'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
         if ($address->company) {
             $data['choose-client'] = 'company';
         } else {
@@ -496,7 +510,6 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         return $resp;
         /*
@@ -521,7 +534,8 @@ class freteclick extends CarrierModule {
          */
     }
 
-    private function getListProductsName() {
+    private function getListProductsName()
+    {
         $arrProductsName = array();
         foreach ($this->context->cart->getProducts() as $product) {
             $arrProductsName[] = $product['name'];
@@ -529,7 +543,8 @@ class freteclick extends CarrierModule {
         return implode(", ", $arrProductsName);
     }
 
-    public function getTransportadoras($postFields) {
+    public function getTransportadoras($postFields)
+    {
         foreach ($this->context->cart->getProducts() as $key => $product) {
             $postFields['product-package'][$key]['qtd'] = $product['cart_quantity'];
             $postFields['product-package'][$key]['weight'] = number_format($product['weight'], 10, ',', '');
@@ -537,7 +552,7 @@ class freteclick extends CarrierModule {
             $postFields['product-package'][$key]['width'] = number_format($product['width'] / 100, 10, ',', '');
             $postFields['product-package'][$key]['depth'] = number_format($product['depth'] / 100, 10, ',', '');
         }
-        $address = new Address(intval($this->context->cart->id_address_delivery));
+        $address = new Address((int)$this->context->cart->id_address_delivery);
         $postFields['cep'] = $address->postcode;
         $this->cookie->cep = $address->postcode;
         $postFields['city-destination-id'] = $this->getCityFromCep($address->postcode)->id;
@@ -547,7 +562,6 @@ class freteclick extends CarrierModule {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         $arrJson = $this->filterJson($resp);
         $arrJson = $this->orderByPrice($this->calculaPrecoPrazo($postFields, $arrJson));
@@ -567,17 +581,20 @@ class freteclick extends CarrierModule {
         return $arrJson;
     }
 
-    public function orderByPrice($arrJson) {
+    public function orderByPrice($arrJson)
+    {
         $quotes = (array) $arrJson->response->data->quote;
-        usort($quotes, function($a, $b) {
+        usort($quotes, function ($a, $b) {
             return $a->total > $b->total;
         });
         $arrJson->response->data->quote = $quotes;
         return $arrJson;
     }
 
-    public function calculaDimensoesCorreios($data) {
-        foreach ($data['product-package'] AS $p) {
+    public function calculaDimensoesCorreios($data)
+    {
+        $total = array();
+        foreach ($data['product-package'] as $p) {
             $total += $p['qtd'] * (str_replace(',', '.', $p['height']) * 100) * (str_replace(',', '.', $p['width']) * 100) * (str_replace(',', '.', $p['depth']));
         }
         $raiz = pow($total, (1 / 3)) * 100;
@@ -587,7 +604,8 @@ class freteclick extends CarrierModule {
         return $data;
     }
 
-    public function calculaPrecoPrazo($data, $arrJson) {
+    public function calculaPrecoPrazo($data, $arrJson)
+    {
         $data = $this->calculaDimensoesCorreios($data);
         $dados = array(
             '4510' => 'PAC',
@@ -633,14 +651,14 @@ class freteclick extends CarrierModule {
         }
     }
 
-    public function getCityFromCep($cep) {
+    public function getCityFromCep($cep)
+    {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url_search_city_from_cep);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array('cep' => $cep)));
         $resp = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         $arrData = $this->filterJson($resp);
         if ($arrData->response->success === false || $arrData->response->data === false || $arrData->response->data->id === false) {
@@ -650,7 +668,8 @@ class freteclick extends CarrierModule {
         return $this->getErrors() ? : $arrData->response->data;
     }
 
-    public function filterJson($json) {
+    public function filterJson($json)
+    {
         $arrJson = Tools::jsonDecode($json);
         if (!$arrJson) {
             $this->addError('Erro ao recuperar dados');
@@ -666,7 +685,8 @@ class freteclick extends CarrierModule {
         return $this->getErrors() ? : $arrJson;
     }
 
-    public function getErrors() {
+    public function getErrors()
+    {
         return self::$error ? array(
             'response' => array(
                 'data' => 'false',
@@ -677,12 +697,12 @@ class freteclick extends CarrierModule {
                 ) : false;
     }
 
-    public function addError($error) {
+    public function addError($error)
+    {
         self::$error[] = array(
             'code' => md5($error),
             'message' => $error
         );
         return $this->getErrors();
     }
-
 }
