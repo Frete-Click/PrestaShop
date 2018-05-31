@@ -116,8 +116,21 @@ jQuery(function ($) {
                         $('#resultado-frete').show('slow');
                     } else {
                         //erro
-                        $("#frete-valores tbody").append(addRowError(json.response.error));
-                        $('#resultado-frete').show('slow');
+						if (typeof json.response.error == "string"){
+							$("#frete-valores tbody").append(addRowError(json.response.error));
+						}
+						else if (typeof json.response.error == "object" ){
+							var erros = json.response.error;
+							if (erros.length > 0) {
+								for (var i = 0; i < erros.length; i++){
+									$("#frete-valores tbody").append(addRowError(erros[i].message));
+								}
+							}
+							else{
+								$("#frete-valores tbody").append(addRowError(erros.message));
+							}
+						}
+						$('#resultado-frete').show('slow');
                     }
                 },
                 complete: function () {

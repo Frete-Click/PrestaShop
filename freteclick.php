@@ -32,7 +32,7 @@ class FreteClick extends CarrierModule
         $this->cookie = new Cookie('Frete Click'); //make your own cookie
         $this->cookie->setExpire(time() + 20 * 60); // 20 minutes for example
 
-        $this->name = 'freteclick';
+        $this->name = 'FreteClick';
         $this->tab = 'shipping_logistics';
         $this->version = '1.0.0';
         $this->author = 'Frete Click';
@@ -70,7 +70,7 @@ class FreteClick extends CarrierModule
             'id_zone' => 1,
             'is_module' => true,
             'shipping_external' => true,
-            'external_module_name' => 'freteclick',
+            'external_module_name' => 'FreteClick',
             'need_range' => true,
             'logo_img' => 'logo_carrier.jpg'
         );
@@ -181,7 +181,7 @@ class FreteClick extends CarrierModule
             }
         }
         $this->_html .= $this->renderForm();
-        $this->_html = preg_replace('/FC_CITY_ORIGIN_NAME/i', 'FC_CITY_ORIGIN_NAME" data-autocomplete-hidden-result="#FC_CITY_ORIGIN" data-autocomplete-ajax-url="' . $this->context->link->getModuleLink('freteclick', 'cityorigin'), $this->_html);
+        $this->_html = preg_replace('/FC_CITY_ORIGIN_NAME/i', 'FC_CITY_ORIGIN_NAME" data-autocomplete-hidden-result="#FC_CITY_ORIGIN" data-autocomplete-ajax-url="' . $this->context->link->getModuleLink('FreteClick', 'cityorigin'), $this->_html);
         return $this->_html;
     }
 
@@ -326,7 +326,7 @@ class FreteClick extends CarrierModule
 
     public function getOrderShippingCost($params, $shipping_cost)
     {
-        $total = array();
+        $total = 0;
         if ($this->context->cart->id && !self::$shippingCost) {
             foreach ($this->context->cart->getProducts() as $product) {
                 $total += $product['total'];
@@ -359,9 +359,9 @@ class FreteClick extends CarrierModule
         }
         $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
-        $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
-        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
-        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
+        $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('FreteClick', 'calcularfrete'));
+        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('FreteClick', 'citydestination'));
+        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('FreteClick', 'cityorigin'));
         $smarty->assign('cep', $this->cookie->cep);
         return $this->display(__FILE__, 'views/templates/hook/simularfrete.tpl');
     }
@@ -378,9 +378,9 @@ class FreteClick extends CarrierModule
         $smarty->assign('cart_total', $this->context->cart->getOrderTotal());
         $smarty->assign('cart_product_names', $this->getListProductsName());
         $smarty->assign('cart_total_weight', $this->context->cart->getTotalWeight());
-        $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
-        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
-        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
+        $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('FreteClick', 'calcularfrete'));
+        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('FreteClick', 'citydestination'));
+        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('FreteClick', 'cityorigin'));
         $smarty->assign('cep', $this->cookie->cep);
         return $this->display(__FILE__, 'views/templates/hook/simularfrete_cart.tpl');
     }
@@ -393,7 +393,7 @@ class FreteClick extends CarrierModule
             'display_name' => $this->displayName,
             'carrier_checked' => $params['cart']->id_carrier,
             'fc_carrier_id' => (int) (Configuration::get('FC_CARRIER_ID')),
-            'url_transportadora' => $this->context->link->getModuleLink('freteclick', 'transportadora') . '?_=' . microtime()
+            'url_transportadora' => $this->context->link->getModuleLink('FreteClick', 'transportadora') . '?_=' . microtime()
         );
 
         try {
@@ -593,7 +593,7 @@ class FreteClick extends CarrierModule
 
     public function calculaDimensoesCorreios($data)
     {
-        $total = array();
+        $total = 0;
         foreach ($data['product-package'] as $p) {
             $total += $p['qtd'] * (str_replace(',', '.', $p['height']) * 100) * (str_replace(',', '.', $p['width']) * 100) * (str_replace(',', '.', $p['depth']));
         }
