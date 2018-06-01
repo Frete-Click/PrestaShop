@@ -205,6 +205,10 @@ jQuery(function ($) {
                 return false;
             }
         });
+		
+		$(".fc-input-cep").keypress(function (event) {
+			maskCep(this, "#####-###");
+		});
 
     });
 }

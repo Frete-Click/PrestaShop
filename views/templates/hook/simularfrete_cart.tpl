@@ -9,6 +9,7 @@
     <div class="panel-body">
         <form name="calcular_frete" id="calcular_frete" data-action="{$url_shipping_quote|escape:'htmlall':'UTF-8'}" method="post" />
         <input type="hidden" name="city-origin-id" value="{$city_origin_id|escape:'htmlall':'UTF-8'}" />
+        <input type="hidden" name="cep-origin" value="{$cep_origin|escape:'htmlall':'UTF-8'}" />
         <input type="hidden" name="product-type" value="{$cart_product_names|escape:'htmlall':'UTF-8'}" />
         <input type="hidden" name="product-total-price" id="product-total-price" value="{$cart_total|escape:'htmlall':'UTF-8'}" />
         <input type="text" id="fk-cep" value="{$cep|escape:'htmlall':'UTF-8'}" onkeypress="maskCep(this, '#####-###')" maxlength="9" class="form-control" name="cep" placeholder="CEP de destino" required>
