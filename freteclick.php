@@ -1,6 +1,6 @@
 <?php
 /**
- *  Módulo para o calculo do frete usando o webservice do Freteclick
+ *  Module for the calculation of the shipping using the web service of Freteclick
  *  @author    Ederson Ferreira (ederson.dev@gmail.com)
  *  @copyright 2010-2015 Freteclick
  *  @license   LICENSE
@@ -32,23 +32,23 @@ class Freteclick extends CarrierModule
         $this->cookie = new Cookie('Frete Click');
         $this->cookie->setExpire(time() + 20 * 60);
 
-        $this->name = 'freteclick';
+        $this->name = 'Freteclick';
         $this->tab = 'shipping_logistics';
         $this->version = '1.0.0';
         $this->author = 'Frete Click';
         $this->bootstrap = true;
         parent::__construct();
         $this->displayName = $this->l('Freteclick');
-        $this->description = $this->l('Calculo do frete com o serviço web Freteclick');
+        $this->description = $this->l('Calculation of shipping with the web service Freteclick');
 
         if (self::isInstalled($this->name)) {
             // Verifica se a cidade de origem foi selecionada
             if (!Configuration::get('FC_CITY_ORIGIN')) {
-                $this->warning = $this->l('A cidade de origem precisa estar configurada no módulo');
+                $this->warning = $this->l('The home city must be configured');
             }
             // Verifica se o CEP de origem foi selecionada
             if (!Configuration::get('FC_CEP_ORIGIN')) {
-                $this->warning = $this->l('O CEP de origem precisa estar configurado no módulo');
+                $this->warning = $this->l('The home zip code must be configured');
             }
         }
         $this->url_shipping_quote = 'https://api.freteclick.com.br/sales/shipping-quote.json';
@@ -70,7 +70,7 @@ class Freteclick extends CarrierModule
             'deleted' => 0,
             'shipping_handling' => false,
             'range_behavior' => 0,
-            'delay' => array(Language::getIsoById(Configuration::get('PS_LANG_DEFAULT')) => 'Selecione a transportadora desejada'),
+            'delay' => array(Language::getIsoById(Configuration::get('PS_LANG_DEFAULT')) => 'Select the desired carrier'),
             'id_zone' => 1,
             'is_module' => true,
             'shipping_external' => true,
@@ -194,7 +194,7 @@ class Freteclick extends CarrierModule
         $fields_form = array(
             'form' => array(
                 'legend' => array(
-                    'title' => $this->l('Configuração Freteclick')
+                    'title' => $this->l('Freteclick configuration')
                 ),
                 'input' => array(
                     array(
@@ -203,8 +203,8 @@ class Freteclick extends CarrierModule
                     ),
                     array(
                         'type' => 'text',
-                        'label' => $this->l('Cidade de origem'),
-                        'hint' => $this->l('Digite a cidade onde a mercadoria será coletada'),
+                        'label' => $this->l('Home city'),
+                        'hint' => $this->l('Enter the city where the merchandise will be collected'),
                         'name' => 'FC_CITY_ORIGIN_NAME',
                         'id' => 'city-origin',
                         'required' => true,
@@ -212,8 +212,8 @@ class Freteclick extends CarrierModule
                     ),
                     array(
                         'type' => 'text',
-                        'label' => $this->l('CEP de origem'),
-                        'hint' => $this->l('Digite o CEP onde a mercadoria será coletada'),
+                        'label' => $this->l('Home zip code'),
+                        'hint' => $this->l('Enter the zip code where the merchandise will be collected'),
                         'name' => 'FC_CEP_ORIGIN',
                         'id' => 'cep-origin',
                         'required' => true,
@@ -222,15 +222,15 @@ class Freteclick extends CarrierModule
                     ),
                     array(
                         'type' => 'text',
-                        'label' => $this->l('Chave de API'),
-                        'hint' => $this->l('Digite a chave de API encontrada em seu painel http://www.freteclick.com.br'),
+                        'label' => $this->l('API Key'),
+                        'hint' => $this->l('Enter the API key found in your dashboard http://www.freteclick.com.br'),
                         'name' => 'FC_API_KEY',
                         'required' => true,
                     ),
                     array(
                         'type' => 'radio',
-                        'label' => $this->l('Informação do Produto'),
-                        'hint' => $this->l('Exibe o box de cotação de frete na tela de descrição do produto.'),
+                        'label' => $this->l('Product Information'),
+                        'hint' => $this->l('Displays a shipping quote box on the product description screen.'),
                         'name' => 'FC_INFO_PROD',
                         'required' => true,
                         'class' => 't',
@@ -250,8 +250,8 @@ class Freteclick extends CarrierModule
                     ),
                     array(
                         'type' => 'radio',
-                        'label' => $this->l('Carrinho de compras'),
-                        'hint' => $this->l('Exibe o box de cotação de frete na tela Carrinho de compras.'),
+                        'label' => $this->l('Shopping cart'),
+                        'hint' => $this->l('Displays a shipping quote box on the Shopping Cart screen.'),
                         'name' => 'FC_SHOP_CART',
                         'required' => true,
                         'class' => 't',
@@ -488,7 +488,7 @@ class Freteclick extends CarrierModule
     }
 
     /**
-     * Hook que será executado ao finalizar um pedido
+     * Hook that will run when finalizing an order
      */
     public function hookOrderConfirmation($params)
     {
