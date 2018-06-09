@@ -32,7 +32,7 @@ class Freteclick extends CarrierModule
         $this->cookie = new Cookie('Frete Click');
         $this->cookie->setExpire(time() + 20 * 60);
 
-        $this->name = 'Freteclick';
+        $this->name = 'freteclick';
         $this->tab = 'shipping_logistics';
         $this->version = '1.0.0';
         $this->author = 'Frete Click';
@@ -74,7 +74,7 @@ class Freteclick extends CarrierModule
             'id_zone' => 1,
             'is_module' => true,
             'shipping_external' => true,
-            'external_module_name' => 'Freteclick',
+            'external_module_name' => 'freteclick',
             'need_range' => true,
             'logo_img' => 'logo_carrier.jpg'
         );
@@ -185,7 +185,7 @@ class Freteclick extends CarrierModule
             }
         }
         $this->_html .= $this->renderForm();
-        $this->_html = preg_replace('/FC_CITY_ORIGIN_NAME/i', 'FC_CITY_ORIGIN_NAME" data-autocomplete-hidden-result="#FC_CITY_ORIGIN" data-autocomplete-ajax-url="' . $this->context->link->getModuleLink('Freteclick', 'cityorigin'), $this->_html);
+        $this->_html = preg_replace('/FC_CITY_ORIGIN_NAME/i', 'FC_CITY_ORIGIN_NAME" data-autocomplete-hidden-result="#FC_CITY_ORIGIN" data-autocomplete-ajax-url="' . $this->context->link->getModuleLink('freteclick', 'cityorigin'), $this->_html);
         return $this->_html;
     }
 
@@ -379,7 +379,7 @@ class Freteclick extends CarrierModule
         $fc_is_active = $num_car == 0 ? true : false;
         if ($num_car > 0) {
             foreach ($product_carriers as $key => $carrier) {
-                if ($carrier["external_module_name"] == "Freteclick") {
+                if ($carrier["external_module_name"] == "freteclick") {
                     $fc_is_active = $carrier["active"];
                     break;
                 }
@@ -387,7 +387,7 @@ class Freteclick extends CarrierModule
         } else {
             $fc_is_active = false;
             foreach ($carriers as $key => $carrier) {
-                if ($carrier["external_module_name"] == "Freteclick") {
+                if ($carrier["external_module_name"] == "freteclick") {
                     $fc_is_active = true;
                     break;
                 }
@@ -401,9 +401,9 @@ class Freteclick extends CarrierModule
         $this->context->controller->addJS($this->_path . 'views/js/Freteclick.js');
         $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
         $smarty->assign('cep_origin', Configuration::get('FC_CEP_ORIGIN'));
-        $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('Freteclick', 'calcularfrete'));
-        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('Freteclick', 'citydestination'));
-        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('Freteclick', 'cityorigin'));
+        $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
+        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
+        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
         $smarty->assign('cep', $this->cookie->cep);
         return $this->display(__FILE__, 'views/templates/hook/simularfrete.tpl');
     }
@@ -414,7 +414,7 @@ class Freteclick extends CarrierModule
         $carriers = Carrier::getCarriers($this->cookie->id_lang, true, false, false, null, PS_CARRIERS_AND_CARRIER_MODULES_NEED_RANGE);
         $fc_is_active = false;
         foreach ($carriers as $key => $carrier) {
-            if ($carrier["external_module_name"] == "Freteclick") {
+            if ($carrier["external_module_name"] == "freteclick") {
                 $fc_is_active = true;
                 break;
             }
@@ -427,7 +427,7 @@ class Freteclick extends CarrierModule
                 if ($num_car > 0) {
                     $fc_is_active = false;
                     foreach ($product_carriers as $key => $carrier) {
-                        if ($carrier["external_module_name"] == "Freteclick") {
+                        if ($carrier["external_module_name"] == "freteclick") {
                             $fc_is_active = $carrier["active"];
                             break;
                         }
@@ -438,6 +438,7 @@ class Freteclick extends CarrierModule
                 }
             }
         }
+		
         $smarty = $this->smarty;
 
         if (Configuration::get('FC_SHOP_CART') != '1' || !$fc_is_active) {
@@ -449,9 +450,9 @@ class Freteclick extends CarrierModule
         $smarty->assign('cart_total', $this->context->cart->getOrderTotal());
         $smarty->assign('cart_product_names', $this->getListProductsName());
         $smarty->assign('cart_total_weight', $this->context->cart->getTotalWeight());
-        $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('Freteclick', 'calcularfrete'));
-        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('Freteclick', 'citydestination'));
-        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('Freteclick', 'cityorigin'));
+        $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
+        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
+        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
         $smarty->assign('cep', $this->cookie->cep);
         return $this->display(__FILE__, 'views/templates/hook/simularfrete_cart.tpl');
     }
@@ -464,7 +465,7 @@ class Freteclick extends CarrierModule
             'display_name' => $this->displayName,
             'carrier_checked' => $params['cart']->id_carrier,
             'fc_carrier_id' => (int) (Configuration::get('FC_CARRIER_ID')),
-            'url_transportadora' => $this->context->link->getModuleLink('Freteclick', 'transportadora') . '?_=' . microtime()
+            'url_transportadora' => $this->context->link->getModuleLink('freteclick', 'transportadora') . '?_=' . microtime()
         );
 
         try {
