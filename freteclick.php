@@ -22,7 +22,6 @@ class Freteclick extends CarrierModule
     public $url_choose_quote;
     public $url_add_quote_destination_client;
     public $url_add_quote_origin_company;
-    public static $shippingCost;
     public $cookie;
     protected static $error;
 
@@ -49,6 +48,21 @@ class Freteclick extends CarrierModule
             // Verifica se o CEP de origem foi selecionada
             if (!Configuration::get('FC_CEP_ORIGIN')) {
                 $this->warning = $this->l('The home zip code must be configured');
+            }			
+            if (!Configuration::get('FC_STREET_ORIGIN')) {
+                $this->warning = $this->l('The street origin field is required.');
+            }
+            if (!Configuration::get('FC_NUMBER_ORIGIN')) {
+                $this->warning = $this->l('The number origin field is required.');
+            }
+            if (!Configuration::get('FC_DISTRICT_ORIGIN')) {
+                $this->warning = $this->l('The district origin field is required.');
+            }
+            if (!Configuration::get('FC_STATE_ORIGIN')) {
+                $this->warning = $this->l('The state origin field is required.');
+            }
+            if (!Configuration::get('FC_CONTRY_ORIGIN')) {
+                $this->warning = $this->l('The country origin field is required.');
             }
         }
         $this->url_shipping_quote = 'https://api.freteclick.com.br/sales/shipping-quote.json';
@@ -185,7 +199,6 @@ class Freteclick extends CarrierModule
             }
         }
         $this->_html .= $this->renderForm();
-        $this->_html = preg_replace('/FC_CITY_ORIGIN_NAME/i', 'FC_CITY_ORIGIN_NAME" data-autocomplete-hidden-result="#FC_CITY_ORIGIN" data-autocomplete-ajax-url="' . $this->context->link->getModuleLink('freteclick', 'cityorigin'), $this->_html);
         return $this->_html;
     }
 
@@ -198,19 +211,6 @@ class Freteclick extends CarrierModule
                 ),
                 'input' => array(
                     array(
-                        'type' => 'hidden',
-                        'name' => 'FC_CITY_ORIGIN'
-                    ),
-                    array(
-                        'type' => 'text',
-                        'label' => $this->l('Home city'),
-                        'hint' => $this->l('Enter the city where the merchandise will be collected'),
-                        'name' => 'FC_CITY_ORIGIN_NAME',
-                        'id' => 'city-origin',
-                        'required' => true,
-                        'class' => 'form-control ui-autocomplete-input'
-                    ),
-                    array(
                         'type' => 'text',
                         'label' => $this->l('Home zip code'),
                         'hint' => $this->l('Enter the zip code where the merchandise will be collected'),
@@ -219,6 +219,69 @@ class Freteclick extends CarrierModule
                         'required' => true,
                         'maxlength' => 9,
                         'class' => 'form-control fc-input-cep'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Street'),
+                        'hint' => $this->l('Enter the Street where the merchandise will be collected'),
+                        'name' => 'FC_STREET_ORIGIN',
+                        'id' => 'street-origin',
+                        'required' => true,
+                        'class' => 'form-control'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Number'),
+                        'hint' => $this->l('Enter the number where the merchandise will be collected'),
+                        'name' => 'FC_NUMBER_ORIGIN',
+                        'id' => 'number-origin',
+                        'required' => true,
+                        'class' => 'form-control'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Complement'),
+                        'hint' => $this->l('Enter the complement where the merchandise will be collected'),
+                        'name' => 'FC_COMPLEMENT_ORIGIN',
+                        'id' => 'complement-origin',
+                        'required' => false,
+                        'class' => 'form-control'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('District'),
+                        'hint' => $this->l('Enter the district where the merchandise will be collected'),
+                        'name' => 'FC_DISTRICT_ORIGIN',
+                        'id' => 'district-origin',
+                        'required' => true,
+                        'class' => 'form-control'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Home city'),
+                        'hint' => $this->l('Enter the city where the merchandise will be collected'),
+                        'name' => 'FC_CITY_ORIGIN',
+                        'id' => 'city-origin',
+                        'required' => true,
+                        'class' => 'form-control'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Home state'),
+                        'hint' => $this->l('Enter the state where the merchandise will be collected'),
+                        'name' => 'FC_STATE_ORIGIN',
+                        'id' => 'state-origin',
+                        'required' => true,
+                        'class' => 'form-control'
+                    ),
+                    array(
+                        'type' => 'text',
+                        'label' => $this->l('Home Country'),
+                        'hint' => $this->l('Enter the contry where the merchandise will be collected'),
+                        'name' => 'FC_CONTRY_ORIGIN',
+                        'id' => 'country-origin',
+                        'required' => true,
+                        'class' => 'form-control'
                     ),
                     array(
                         'type' => 'text',
@@ -301,8 +364,13 @@ class Freteclick extends CarrierModule
     {
         $values = array(
             'FC_CITY_ORIGIN' => Tools::getValue('FC_CITY_ORIGIN', Configuration::get('FC_CITY_ORIGIN')),
-            'FC_CITY_ORIGIN_NAME' => Tools::getValue('FC_CITY_ORIGIN_NAME', Configuration::get('FC_CITY_ORIGIN_NAME')),
             'FC_CEP_ORIGIN' => Tools::getValue('FC_CEP_ORIGIN', Configuration::get('FC_CEP_ORIGIN')),
+			'FC_STREET_ORIGIN' => Tools::getValue('FC_STREET_ORIGIN', Configuration::get('FC_STREET_ORIGIN')),
+			'FC_NUMBER_ORIGIN' => Tools::getValue('FC_NUMBER_ORIGIN', Configuration::get('FC_NUMBER_ORIGIN')),
+			'FC_COMPLEMENT_ORIGIN' => Tools::getValue('FC_COMPLEMENT_ORIGIN', Configuration::get('FC_COMPLEMENT_ORIGIN')),
+			'FC_STATE_ORIGIN' => Tools::getValue('FC_STATE_ORIGIN', Configuration::get('FC_STATE_ORIGIN')),
+			'FC_CONTRY_ORIGIN' => Tools::getValue('FC_CONTRY_ORIGIN', Configuration::get('FC_CONTRY_ORIGIN')),
+			'FC_DISTRICT_ORIGIN' => Tools::getValue('FC_DISTRICT_ORIGIN', Configuration::get('FC_DISTRICT_ORIGIN')),
             'FC_INFO_PROD' => Tools::getValue('FC_INFO_PROD', Configuration::get('FC_INFO_PROD')),
             'FC_SHOP_CART' => Tools::getValue('FC_SHOP_CART', Configuration::get('FC_SHOP_CART')),
             'FC_API_KEY' => Tools::getValue('FC_API_KEY', Configuration::get('FC_API_KEY')),
@@ -314,14 +382,34 @@ class Freteclick extends CarrierModule
     {
         try {
             if (empty(Tools::getValue('FC_CITY_ORIGIN'))) {
-                $this->addError('O campo cidade de origem é obrigatório.');
+                $this->addError('The city of origin field is required.');
             }
             if (empty(Tools::getValue('FC_CEP_ORIGIN'))) {
-                $this->addError('O campo CEP de origem é obrigatório.');
+                $this->addError('The Zip Code field is required.');
+            }
+            if (empty(Tools::getValue('FC_STREET_ORIGIN'))) {
+                $this->addError('The street origin field is required.');
+            }
+            if (empty(Tools::getValue('FC_NUMBER_ORIGIN'))) {
+                $this->addError('The number origin field is required.');
+            }
+            if (empty(Tools::getValue('FC_DISTRICT_ORIGIN'))) {
+                $this->addError('The district origin field is required.');
+            }
+            if (empty(Tools::getValue('FC_STATE_ORIGIN'))) {
+                $this->addError('The state origin field is required.');
+            }
+            if (empty(Tools::getValue('FC_CONTRY_ORIGIN'))) {
+                $this->addError('The country origin field is required.');
             }
             Configuration::updateValue('FC_CITY_ORIGIN', Tools::getValue('FC_CITY_ORIGIN'));
-            Configuration::updateValue('FC_CITY_ORIGIN_NAME', Tools::getValue('FC_CITY_ORIGIN_NAME'));
             Configuration::updateValue('FC_CEP_ORIGIN', Tools::getValue('FC_CEP_ORIGIN'));
+            Configuration::updateValue('FC_STREET_ORIGIN', Tools::getValue('FC_STREET_ORIGIN'));
+            Configuration::updateValue('FC_COMPLEMENT_ORIGIN', Tools::getValue('FC_COMPLEMENT_ORIGIN'));
+            Configuration::updateValue('FC_NUMBER_ORIGIN', Tools::getValue('FC_NUMBER_ORIGIN'));
+            Configuration::updateValue('FC_DISTRICT_ORIGIN', Tools::getValue('FC_DISTRICT_ORIGIN'));
+            Configuration::updateValue('FC_STATE_ORIGIN', Tools::getValue('FC_STATE_ORIGIN'));
+            Configuration::updateValue('FC_CONTRY_ORIGIN', Tools::getValue('FC_CONTRY_ORIGIN'));
             Configuration::updateValue('FC_INFO_PROD', Tools::getValue('FC_INFO_PROD'));
             Configuration::updateValue('FC_SHOP_CART', Tools::getValue('FC_SHOP_CART'));
             Configuration::updateValue('FC_API_KEY', Tools::getValue('FC_API_KEY'));
@@ -346,22 +434,25 @@ class Freteclick extends CarrierModule
     public function getOrderShippingCost($params, $shipping_cost)
     {
         $total = 0;
-        if ($this->context->cart->id && !self::$shippingCost) {
+        if (!$this->cookie->fc_valorFrete) {
             foreach ($this->context->cart->getProducts() as $product) {
                 $total += $product['total'];
             }
 
             $arrPostFields = array(
-                'city-origin-id' => Configuration::get('FC_CITY_ORIGIN'),
+                'city-origin' => Configuration::get('FC_CITY_ORIGIN'),
                 'cep-origin' => Configuration::get('FC_CEP_ORIGIN'),
+				'street-origin' => Configuration::get('FC_STREET_ORIGIN'),
+				'address-number-origin' => Configuration::get('FC_NUMBER_ORIGIN'),
+				'complement-origin' => Configuration::get('FC_COMPLEMENT_ORIGIN') ? : "",
+				'district-origin' => Configuration::get('FC_DISTRICT_ORIGIN'),
+				'state-origin' => Configuration::get('FC_STATE_ORIGIN'),
+				'country-origin' => Configuration::get('FC_CONTRY_ORIGIN'),
                 'product-type' => $this->getListProductsName(),
-                'product-total-price' => $total,
-                'api-key' => Configuration::get('FC_API_KEY')
+                'product-total-price' => number_format($total, 2, ',', '.')
             );
             $this->getTransportadoras($arrPostFields);
-            self::$shippingCost = $this->cookie->fc_valorFrete;
         }
-
         return ( isset($this->cookie->fc_valorFrete) ? $this->cookie->fc_valorFrete : 0 );
     }
 
@@ -399,8 +490,14 @@ class Freteclick extends CarrierModule
             return false;
         }
         $this->context->controller->addJS($this->_path . 'views/js/Freteclick.js');
-        $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
         $smarty->assign('cep_origin', Configuration::get('FC_CEP_ORIGIN'));
+        $smarty->assign('street_origin', Configuration::get('FC_STREET_ORIGIN'));
+        $smarty->assign('number_origin', Configuration::get('FC_NUMBER_ORIGIN'));
+        $smarty->assign('complement_origin', Configuration::get('FC_COMPLEMENT_ORIGIN'));
+        $smarty->assign('district_origin', Configuration::get('FC_DISTRICT_ORIGIN'));
+        $smarty->assign('city_origin', Configuration::get('FC_CITY_ORIGIN'));
+        $smarty->assign('state_origin', Configuration::get('FC_STATE_ORIGIN'));
+        $smarty->assign('country_origin', Configuration::get('FC_CONTRY_ORIGIN'));
         $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
         $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
         $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
@@ -410,6 +507,7 @@ class Freteclick extends CarrierModule
 
     public function hookdisplayShoppingCartFooter($params)
     {
+		$langID = $this->context->language->id;
         $products = Context::getContext()->cart->getProducts();
         $carriers = Carrier::getCarriers($this->cookie->id_lang, true, false, false, null, PS_CARRIERS_AND_CARRIER_MODULES_NEED_RANGE);
         $fc_is_active = false;
@@ -419,9 +517,13 @@ class Freteclick extends CarrierModule
                 break;
             }
         }
+		
+		$prod_name = false;
+		
         if ($fc_is_active == true) {
             foreach ($products as $key => $prod) {
-                $product = new Product((int)$prod["id_product"]);
+                $product = new Product((int)$prod["id_product"], false, $langID);
+				if (!$prod_name){ $prod_name = $product->name; }
                 $product_carriers = $product->getCarriers();
                 $num_car = count($product_carriers);
                 if ($num_car > 0) {
@@ -445,15 +547,17 @@ class Freteclick extends CarrierModule
             return false;
         }
         $this->context->controller->addJS($this->_path . 'views/js/Freteclick.js');
-        $smarty->assign('city_origin_id', Configuration::get('FC_CITY_ORIGIN'));
         $smarty->assign('cep_origin', Configuration::get('FC_CEP_ORIGIN'));
-        $smarty->assign('cart_total', $this->context->cart->getOrderTotal());
-        $smarty->assign('cart_product_names', $this->getListProductsName());
-        $smarty->assign('cart_total_weight', $this->context->cart->getTotalWeight());
+        $smarty->assign('street_origin', Configuration::get('FC_STREET_ORIGIN'));
+        $smarty->assign('number_origin', Configuration::get('FC_NUMBER_ORIGIN'));
+        $smarty->assign('complement_origin', Configuration::get('FC_COMPLEMENT_ORIGIN'));
+        $smarty->assign('district_origin', Configuration::get('FC_DISTRICT_ORIGIN'));
+        $smarty->assign('city_origin', Configuration::get('FC_CITY_ORIGIN'));
+        $smarty->assign('state_origin', Configuration::get('FC_STATE_ORIGIN'));
+        $smarty->assign('country_origin', Configuration::get('FC_CONTRY_ORIGIN'));
         $smarty->assign('url_shipping_quote', $this->context->link->getModuleLink('freteclick', 'calcularfrete'));
-        $smarty->assign('url_city_destination', $this->context->link->getModuleLink('freteclick', 'citydestination'));
-        $smarty->assign('url_city_origin', $this->context->link->getModuleLink('freteclick', 'cityorigin'));
         $smarty->assign('cep', $this->cookie->cep);
+		$smarty->assign('product_name', $prod_name);
         return $this->display(__FILE__, 'views/templates/hook/simularfrete_cart.tpl');
     }
 
@@ -471,20 +575,26 @@ class Freteclick extends CarrierModule
         try {
             if ($params['cart']->id_carrier == (int) (Configuration::get('FC_CARRIER_ID'))) {
                 $arrPostFields = array(
-                    'city-origin-id' => Configuration::get('FC_CITY_ORIGIN'),
+                    'city-origin' => Configuration::get('FC_CITY_ORIGIN'),
                     'cep-origin' => Configuration::get('FC_CEP_ORIGIN'),
+					'street-origin' => Configuration::get('FC_STREET_ORIGIN'),
+					'address-number-origin' => Configuration::get('FC_NUMBER_ORIGIN'),
+					'complement-origin' => Configuration::get('FC_COMPLEMENT_ORIGIN') ? : "",
+					'district-origin' => Configuration::get('FC_DISTRICT_ORIGIN'),
+					'state-origin' => Configuration::get('FC_STATE_ORIGIN'),
+					'country-origin' => Configuration::get('FC_CONTRY_ORIGIN'),
                     'product-type' => $this->getListProductsName(),
-                    'product-total-price' => $this->context->cart->getOrderTotal(),
-                    'api-key' => Configuration::get('FC_API_KEY')
+                    'product-total-price' =>  number_format($this->context->cart->getOrderTotal(), 2, ',', '.')
                 );
                 $arrSmarty['arr_transportadoras'] = $this->getTransportadoras($arrPostFields);
+				
                 $arrSmarty['quote_id'] = ( isset($this->cookie->quote_id) ? $this->cookie->quote_id : null );
+				$smarty->assign($arrSmarty);
             }
         } catch (Exception $ex) {
             $arrSmarty['error_message'] = $ex->getMessage();
+			$smarty->assign($arrSmarty);
         }
-        $arrSmarty['cep'] = $this->cookie->cep;
-        $smarty->assign($arrSmarty);
         return $this->display(__FILE__, 'views/templates/hook/order_shipping.tpl');
     }
 
@@ -501,38 +611,43 @@ class Freteclick extends CarrierModule
 
     private function addQuoteDestinationClient($order)
     {
+		$langID = $this->context->language->id;
         $data = array();
         $address = new Address((int)$order->id_address_delivery);
         $customer = new Customer($order->id_customer);
         $data['quote'] = $this->cookie->quote_id;
-        $data['complement'] = $address->address2;
-        $data['street'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), $address->address1));
-        $data['address-number'] = preg_replace('/[^0-9]/', '', $address->address1);
-        $data['cep'] = $address->postcode;
-        $data['city'] = $address->city;
-        $city = $this->getCityFromCep($data['cep']);
-        $data['city-id'] = $city->id;
-        $data['city'] = $city->city;
-        $data['contact-name'] = $address->firstname . ' ' . $address->lastname;
-        $data['address-nickname'] = $address->alias;
-        $data['country'] = $address->country;
-        $data['company-alias'] = $address->company;
-        $data['company-name'] = $address->company;
-        $data['ddd'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
-        $data['phone'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
-        if ($address->company) {
+		if ($address->company) {
             $data['choose-client'] = 'company';
+            $data['company-document'] = '44.444.444/4444-44';
+			$data['company-alias'] = $address->company;
+			$data['company-name'] = $address->company;
         } else {
             $data['choose-client'] = 'client';
+			$data['client-document'] = '444.444.444-44';
         }
         $data['email'] = $customer->email;
-
-        $data['district'] = $city->district;
-        $data['state'] = $city->state;
-        /*
-          $data['company-document'] = '44.444.444/4444-44';
-          $data['client-document'] = '321.156.928-61';
-         */
+        $data['contact-name'] = $address->firstname . ' ' . $address->lastname;
+        $data['ddd'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
+        $data['phone'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
+        $data['address-nickname'] = $address->alias;
+		$data['cep'] = $address->postcode;
+		$data['street'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), $address->address1));
+        $data['address-number'] = preg_replace('/[^0-9]/', '', $address->address1);
+		$data['complement'] = "";
+        $data['district'] = $address->address2;
+        $data['city'] = $address->city;
+		
+		$estados = State::getStates($langID, true);
+		$iso_estado = "";
+		foreach ($estados as $key => $estado){
+			if ($estado["id_state"] == $address->id_state){
+				$iso_estado = $estado["iso_code"];
+				break;
+			}
+		}		
+        $data['state'] = $iso_estado;
+        $data['country'] = $address->country;
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url_add_quote_destination_client . '?api-key=' . Configuration::get('FC_API_KEY'));
         curl_setopt($ch, CURLOPT_POST, true);
@@ -546,37 +661,21 @@ class Freteclick extends CarrierModule
     private function addQuoteOriginCompany($order)
     {
         $data = array();
-        $address = new Address((int)$order->id_address_delivery);
-        $customer = new Customer($order->id_customer);
         $data['quote'] = $this->cookie->quote_id;
-        $data['complement'] = $address->address2;
-        $data['street'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), $address->address1));
-        $data['address-number'] = preg_replace('/[^0-9]/', '', $address->address1);
-        $data['cep'] = $address->postcode;
-        $city = $this->getCityFromCep($data['cep']);
-        $data['city-id'] = $city->id;
-        $data['city'] = $city->city;
-        $data['contact-name'] = $address->firstname . ' ' . $address->lastname;
-        $data['address-nickname'] = $address->alias;
-        $data['country'] = $address->country;
-        $data['company-alias'] = $address->company;
-        $data['company-name'] = $address->company;
-        $data['ddd'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), 2);
-        $data['phone'] = Tools::substr(preg_replace('/[^0-9]/', '', $address->phone), -9);
-        if ($address->company) {
-            $data['choose-client'] = 'company';
-        } else {
-            $data['choose-client'] = 'client';
-        }
-        $data['email'] = $customer->email;
-
-        $data['district'] = $city->district;
-        $data['state'] = $city->state;
-        /*
-          $data['company-document'] = '44.444.444/4444-44';
-          $data['client-document'] = '321.156.928-61';
-         */
-
+        $data['contact-name'] = Configuration::get('PS_SHOP_NAME');
+        $data['email'] = Configuration::get('PS_SHOP_EMAIL');
+        $data['ddd'] = Tools::substr(preg_replace('/[^0-9]/', '', Configuration::get('PS_SHOP_PHONE')), 2);
+        $data['phone'] = Tools::substr(preg_replace('/[^0-9]/', '', Configuration::get('PS_SHOP_PHONE')), -9);
+        $data['address-nickname'] = "Endereço Principal";
+        $data['cep'] = Configuration::get('FC_CEP_ORIGIN');
+		$data['street'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), Configuration::get('FC_STREET_ORIGIN')));
+        $data['address-number'] = Configuration::get('FC_NUMBER_ORIGIN');
+        $data['complement'] = Configuration::get('FC_COMPLEMENT_ORIGIN') ? : "";
+        $data['district'] = Configuration::get('FC_DISTRICT_ORIGIN');
+        $data['city'] = Configuration::get('FC_CITY_ORIGIN');
+        $data['state'] = Configuration::get('FC_STATE_ORIGIN');
+        $data['country'] = Configuration::get('FC_CONTRY_ORIGIN');
+		
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url_add_quote_origin_company . '?api-key=' . Configuration::get('FC_API_KEY'));
         curl_setopt($ch, CURLOPT_POST, true);
@@ -585,26 +684,6 @@ class Freteclick extends CarrierModule
         $resp = curl_exec($ch);
         curl_close($ch);
         return $resp;
-        /*
-          quote:6453
-          contact-id:7
-          contact-name:Luiz Kim Dias Ferreira
-          email:luizkim@gmail.com
-          ddd:(11)
-          phone:98180-5659
-          address-id:272
-          address-nickname:Endereço de entrega
-          cep:07055-030
-          street:Rua Gago Coutinho
-          address-number:12
-          complement:
-          district:Jardim Vila Galvao
-          city:Guarulhos
-          state:São Paulo
-          country:Brazil
-          lat:-23.4673357
-          lng:-46.56053480000003
-         */
     }
 
     private function getListProductsName()
@@ -615,9 +694,42 @@ class Freteclick extends CarrierModule
         }
         return implode(", ", $arrProductsName);
     }
-
+	public function quote($data){
+		$arrRetorno = array();
+        try {
+                $this->cookie->cep = Tools::getValue('cep');
+				$product_price = number_format($data['product-total-price'], 2, ',', '.');
+				$data['product-total-price'] = $product_price;
+				
+				$ch = curl_init();
+				$data['api-key'] = Configuration::get('FC_API_KEY');
+				curl_setopt($ch, CURLOPT_URL, $this->url_shipping_quote);
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+				$resp = curl_exec($ch);
+				curl_close($ch);
+				$arrJson = $this->orderByPrice($this->filterJson($resp));
+				if (!$this->cookie->fc_valorFrete){
+					$this->cookie->fc_valorFrete = $arrJson->response->data->quote[0]->total;
+				}
+                foreach ($arrJson->response->data->quote as $key => $quote) {
+                    $quote_price = number_format($quote->total, 2, ',', '.');
+					$arrJson->response->data->quote[$key]->raw_total = $quote->total;
+                    $arrJson->response->data->quote[$key]->total = "R$ {$quote_price}";
+                }
+                $this->cookie->write();
+                return Tools::jsonEncode($arrJson);
+        } catch (Exception $ex) {
+            $arrRetorno = array(
+                'response' => array('success' => false, 'error' => $ex->getMessage())
+            );
+            return Tools::jsonEncode($arrRetorno);
+        }
+    }
     public function getTransportadoras($postFields)
     {
+		$langID = $this->context->language->id;
         foreach ($this->context->cart->getProducts() as $key => $product) {
             $postFields['product-package'][$key]['qtd'] = $product['cart_quantity'];
             $postFields['product-package'][$key]['weight'] = number_format($product['weight'], 10, ',', '');
@@ -626,31 +738,35 @@ class Freteclick extends CarrierModule
             $postFields['product-package'][$key]['depth'] = number_format($product['depth'] / 100, 10, ',', '');
         }
         $address = new Address((int)$this->context->cart->id_address_delivery);
-        $postFields['cep'] = $address->postcode;
-        $this->cookie->cep = $address->postcode;
-        $postFields['city-destination-id'] = $this->getCityFromCep($address->postcode)->id;
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url_shipping_quote);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
-        $resp = curl_exec($ch);
-        curl_close($ch);
-        $arrJson = $this->filterJson($resp);
-        $arrJson = $this->orderByPrice($this->calculaPrecoPrazo($postFields, $arrJson));
-        $this->cookie->fc_valorFrete = $arrJson->response->data->quote[0]->total;
-        foreach ($arrJson->response->data->quote as $key => $quote) {
-            $quote_price = number_format($quote->total, 2, ',', '.');
-            $arrJson->response->data->quote[$key]->raw_total = str_replace(',', '.', $quote->total);
-            $arrJson->response->data->quote[$key]->total = "R$ {$quote_price}";
-        }
+		
+        $postFields['cep-destination'] = $address->postcode;
+		$postFields['city-destination'] = $address->city;
+		$postFields['street-destination'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), $address->address1));
+		$postFields['address-number-destination'] = preg_replace('/[^0-9]/', '', $address->address1);
+		$postFields['complement-destination'] = "";
+		$postFields['district-destination'] = $address->address2;
+
+		
+		$estados = State::getStates($langID, true);
+		$iso_estado = "";
+		foreach ($estados as $key => $estado){
+			if ($estado["id_state"] == $address->id_state){
+				$iso_estado = $estado["iso_code"];
+				break;
+			}
+		}		
+		$postFields['state-destination'] = $iso_estado;
+		$postFields['country-destination'] = "Brasil";
+		
+		$arrJson = Tools::jsonDecode($this->quote($postFields));
 
         if ($arrJson->response->success === false || $arrJson->response->data === false) {
             $this->addError('Nenhuma transportadora disponível.');
         }
-
-        $this->cookie->delivery_order_id = $arrJson->response->data->id;
-        $this->cookie->write();
+		else{
+			$this->cookie->delivery_order_id = $arrJson->response->data->id;
+			$this->cookie->write();
+		}
         return $arrJson;
     }
 
@@ -663,84 +779,7 @@ class Freteclick extends CarrierModule
         $arrJson->response->data->quote = $quotes;
         return $arrJson;
     }
-
-    public function calculaDimensoesCorreios($data)
-    {
-        $total = 0;
-        foreach ($data['product-package'] as $p) {
-            $total += $p['qtd'] * (str_replace(',', '.', $p['height']) * 100) * (str_replace(',', '.', $p['width']) * 100) * (str_replace(',', '.', $p['depth']));
-        }
-        $raiz = pow($total, (1 / 3)) * 100;
-        $data['width'] = round($raiz);
-        $data['height'] = round($raiz);
-        $data['depth'] = round($raiz);
-        return $data;
-    }
-
-    public function calculaPrecoPrazo($data, $arrJson)
-    {
-        $data = $this->calculaDimensoesCorreios($data);
-        $dados = array(
-            '4510' => 'PAC',
-            '4014' => 'SEDEX'
-        );
-        $parm = array(
-            'nCdEmpresa' => $this->empresa,
-            'sDsSenha' => $this->senha,
-            'nCdServico' => implode(',', array_keys($dados)),
-            'sCepOrigem' => /*$data['cep']*/ Configuration::get('FC_CEP_ORIGIN'),
-            'sCepDestino' => $data['cep'],
-            'nVlPeso' => 10,
-            'nCdFormato' => 1,
-            'nVlComprimento' => (string) ($data['depth'] > 16 ? $data['depth'] : 16),
-            'nVlAltura' => (string) ($data['height'] > 2 ? $data['height'] : 2),
-            'nVlLargura' => (string) ($data['width'] > 16 ? $data['width'] : 16),
-            'nVlDiametro' => '0',
-            'sCdMaoPropria' => 'n',
-            'nVlValorDeclarado' => str_replace(',', '.', $data['product-total-price']),
-            'sCdAvisoRecebimento' => 'n'
-        );
-
-        try {
-            $ws = new SoapClient($this->url_api_correios);
-            $arrayRetorno = $ws->CalcPrecoPrazo($parm);
-            $retornos = $arrayRetorno->CalcPrecoPrazoResult->Servicos->cServico;
-            foreach ($retornos as $retorno) {
-                if (!$retorno->MsgErro) {
-                    $arrJson->response->data->quote[] = (object) array(
-                                "carrier-alias" => $dados[$retorno->Codigo],
-                                "carrier-logo" => $this->_path . 'views/img/' . $dados[$retorno->Codigo] . '.png',
-                                "carrier-name" => $dados[$retorno->Codigo],
-                                "deadline" => $retorno->PrazoEntrega,
-                                "delivery-restricted" => false,
-                                "logo" => $this->_path . 'views/img/' . $dados[$retorno->Codigo] . '.png',
-                                'total' => $retorno->Valor
-                    );
-                }
-            }
-            return $arrJson;
-        } catch (Exception $e) {
-            return $arrJson;
-        }
-    }
-
-    public function getCityFromCep($cep)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url_search_city_from_cep);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array('cep' => $cep)));
-        $resp = curl_exec($ch);
-        curl_close($ch);
-        $arrData = $this->filterJson($resp);
-        if ($arrData->response->success === false || $arrData->response->data === false || $arrData->response->data->id === false) {
-            $this->addError('Nenhuma transportadora disponível para este CEP: ' . $cep);
-        }
-
-        return $this->getErrors() ? : $arrData->response->data;
-    }
-
+    
     public function filterJson($json)
     {
         $arrJson = Tools::jsonDecode($json);
