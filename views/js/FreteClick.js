@@ -36,59 +36,6 @@ jQuery(function ($) {
             $('#product-total-price').attr('value', price.toString().replace('.', ','));
         });
 
-
-        $('#module_form').find("[data-autocomplete-ajax-url]").each(function () {
-            var cache = {};
-            var search = [];
-            var t = this;
-            $(this).autocomplete({
-                minLength: 2,
-                change: function (event, ui) {
-                    var val = $(this).val();
-                    var exists = $.inArray(val, search);
-                    var show_result_field = $(this).data('autocomplete-hidden-result');
-                    if (exists < 0) {
-                        $(this).val("");
-                        $(show_result_field).val("");
-                        return false;
-                    } else {
-                        return true;
-                    }
-                },
-                select: function (event, ui) {
-                    search.push(ui.item.label);
-                    $(this).val(ui.item.label);
-                    var show_result_field = $(this).data('autocomplete-hidden-result');
-                    $(show_result_field).val(ui.item.id);
-                },
-                source: function (request, response) {
-                    var term = request.term;
-                    if (term in cache) {
-                        response(cache[ term ]);
-                        return;
-                    }
-                    $.ajax({
-                        beforeSend: function (xhr) {
-                        },
-                        complete: function (jqXHR, textStatus) {
-                        },
-                        url: $(t).data('autocomplete-ajax-url'),
-                        data: request,
-                        method: 'GET',
-                        cache: true,
-                        dataType: 'json',
-                        success: function (data, status, xhr) {
-                            var result = typeof data === 'object' && typeof data.response === 'object' && typeof data.response.data === 'object' ? data.response.data : null;
-                            if (!result) {
-                                console.log($(t).data('required-msg'));
-                            }
-                            cache[ term ] = result;
-                            response(result);
-                        }
-                    });
-                }});
-        });
-
         $('#fk-cep').keydown(function (event) {
             if (event.keyCode == 13) {
                 event.preventDefault();
@@ -209,6 +156,58 @@ jQuery(function ($) {
 		$(".fc-input-cep").keypress(function (event) {
 			maskCep(this, "#####-###");
 		});
+		
+		//ViaCep
+		var tb_cep, tb_rua, tb_cidade, tb_bairro, se_estado, span_estado, tb_pais;
+
+		tb_cep = document.getElementById("cep-origin") ? document.getElementById("cep-origin") : document.getElementById("fk-cep");
+		tb_rua = document.getElementById("street-origin") ? document.getElementById("street-origin") : document.getElementById("street-destination");
+		tb_cidade = document.getElementById("city-origin") ? document.getElementById("city-origin") : document.getElementById("city-destination");
+		tb_bairro = document.getElementById("district-origin") ? document.getElementById("district-origin") : document.getElementById("district-destination");
+		se_estado = document.getElementById("state-origin") ? document.getElementById("state-origin") : document.getElementById("state-destination");
+		tb_pais = document.getElementById("country-origin") ? document.getElementById("country-origin") : document.getElementById("country-destination");
+		if (tb_pais){
+			tb_pais.value = "Brasil";
+		}
+		if (tb_cep){
+		 var tb_cep_keyup = function(){
+			 var reseta = function () {
+			   tb_cep.disabled = false;
+			   tb_rua.disabled = false;
+			   tb_cidade.disabled = false;
+			   tb_bairro.disabled = false;
+			   se_estado.disabled = false;			 
+			 };
+		  var num = this.value.length;
+		  if (num == 9){
+		   tb_cep.disabled = true;
+		   tb_rua.disabled = true;
+		   tb_cidade.disabled = true;
+		   tb_bairro.disabled = true;
+		   se_estado.disabled = true;
+		   
+		   $.ajax({
+			url: "https://viacep.com.br/ws/"+tb_cep.value+"/json/",
+			data: null,
+			success: function (data) {
+			  if (!data.erro){
+			  tb_rua.value = data.logradouro;
+			  tb_cidade.value = data.localidade;
+			  tb_bairro.value = data.bairro;
+			  se_estado.value = data.uf;
+			  }
+			  reseta();
+			},
+			dataType: "json"
+		   });
+		  }
+		  else{
+			  reseta();
+		  }
+		 }
+		 
+		 tb_cep.onkeyup = tb_cep_keyup;
+		}
 
     });
 }
