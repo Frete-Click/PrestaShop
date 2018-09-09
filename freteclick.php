@@ -188,7 +188,7 @@ class Freteclick extends CarrierModule
     public function getContent()
     {
         $this->context->controller->addJqueryUI('ui.autocomplete');
-        $this->context->controller->addJS($this->_path . 'views/js/Freteclick.js');
+        $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         if (Tools::isSubmit('btnSubmit')) {
             $this->_postProcess();
 
@@ -489,7 +489,7 @@ class Freteclick extends CarrierModule
         if (Configuration::get('FC_INFO_PROD') != '1' || !$fc_is_active) {
             return false;
         }
-        $this->context->controller->addJS($this->_path . 'views/js/Freteclick.js');
+        $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $smarty->assign('cep_origin', Configuration::get('FC_CEP_ORIGIN'));
         $smarty->assign('street_origin', Configuration::get('FC_STREET_ORIGIN'));
         $smarty->assign('number_origin', Configuration::get('FC_NUMBER_ORIGIN'));
@@ -546,7 +546,7 @@ class Freteclick extends CarrierModule
         if (Configuration::get('FC_SHOP_CART') != '1' || !$fc_is_active) {
             return false;
         }
-        $this->context->controller->addJS($this->_path . 'views/js/Freteclick.js');
+        $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $smarty->assign('cep_origin', Configuration::get('FC_CEP_ORIGIN'));
         $smarty->assign('street_origin', Configuration::get('FC_STREET_ORIGIN'));
         $smarty->assign('number_origin', Configuration::get('FC_NUMBER_ORIGIN'));
@@ -564,7 +564,7 @@ class Freteclick extends CarrierModule
     public function hookextraCarrier($params)
     {
         $smarty = $this->smarty;
-        $this->context->controller->addJS($this->_path . 'views/js/Freteclick.js');
+        $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $arrSmarty = array(
             'display_name' => $this->displayName,
             'carrier_checked' => $params['cart']->id_carrier,
