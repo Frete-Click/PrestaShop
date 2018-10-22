@@ -65,14 +65,15 @@ class Freteclick extends CarrierModule
                 $this->warning = $this->l('The country origin field is required.');
             }
         }
-        $this->url_shipping_quote = 'https://api.freteclick.com.br/sales/shipping-quote.json';
-        $this->url_city_origin = 'https://api.freteclick.com.br/carrier/search-city-origin.json';
-        $this->url_city_destination = 'https://api.freteclick.com.br/carrier/search-city-destination.json';
-        $this->url_search_city_from_cep = 'https://api.freteclick.com.br/carrier/search-city-from-cep.json';
-        $this->url_choose_quote = 'https://api.freteclick.com.br/sales/choose-quote.json';
-        $this->url_api_correios = 'http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx?WSDL';
-        $this->url_add_quote_destination_client = 'https://api.freteclick.com.br/sales/add-quote-destination-client.json';
-        $this->url_add_quote_origin_company = 'https://api.freteclick.com.br/sales/add-quote-origin-company.json.json';
+        $this->api_url = 'https://api.freteclick.com.br';
+        $this->url_shipping_quote = '/sales/shipping-quote.json';
+        $this->url_city_origin = '/carrier/search-city-origin.json';
+        $this->url_city_destination = '/carrier/search-city-destination.json';
+        $this->url_search_city_from_cep = '/carrier/search-city-from-cep.json';
+        $this->url_choose_quote = '/sales/choose-quote.json';
+        $this->url_api_correios = '/calculador/CalcPrecoPrazo.asmx?WSDL';
+        $this->url_add_quote_destination_client = '/sales/add-quote-destination-client.json';
+        $this->url_add_quote_origin_company = '/sales/add-quote-origin-company.json.json';
     }
 
     public function install()
@@ -562,7 +563,7 @@ class Freteclick extends CarrierModule
     }
 
     public function hookextraCarrier($params)
-    {
+    {                        
         $smarty = $this->smarty;
         $this->context->controller->addJS($this->_path . 'views/js/FreteClick.js');
         $arrSmarty = array(
@@ -589,12 +590,12 @@ class Freteclick extends CarrierModule
                 $arrSmarty['arr_transportadoras'] = $this->getTransportadoras($arrPostFields);
 				
                 $arrSmarty['quote_id'] = ( isset($this->cookie->quote_id) ? $this->cookie->quote_id : null );
-				$smarty->assign($arrSmarty);
+				$smarty->assign($arrSmarty);                                
             }
         } catch (Exception $ex) {
             $arrSmarty['error_message'] = $ex->getMessage();
 			$smarty->assign($arrSmarty);
-        }
+        }                                       
         return $this->display(__FILE__, 'views/templates/hook/order_shipping.tpl');
     }
 
@@ -649,7 +650,7 @@ class Freteclick extends CarrierModule
         $data['country'] = $address->country;
         
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url_add_quote_destination_client . '?api-key=' . Configuration::get('FC_API_KEY'));
+        curl_setopt($ch, CURLOPT_URL, $this->api_url.$this->url_add_quote_destination_client . '?api-key=' . Configuration::get('FC_API_KEY'));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
@@ -677,7 +678,7 @@ class Freteclick extends CarrierModule
         $data['country'] = Configuration::get('FC_CONTRY_ORIGIN');
 		
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url_add_quote_origin_company . '?api-key=' . Configuration::get('FC_API_KEY'));
+        curl_setopt($ch, CURLOPT_URL, $this->api_url.$this->url_add_quote_origin_company . '?api-key=' . Configuration::get('FC_API_KEY'));
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
@@ -703,7 +704,7 @@ class Freteclick extends CarrierModule
 				
 				$ch = curl_init();
 				$data['api-key'] = Configuration::get('FC_API_KEY');
-				curl_setopt($ch, CURLOPT_URL, $this->url_shipping_quote);
+				curl_setopt($ch, CURLOPT_URL, $this->api_url.$this->url_shipping_quote);
 				curl_setopt($ch, CURLOPT_POST, true);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
@@ -744,7 +745,7 @@ class Freteclick extends CarrierModule
 		$postFields['street-destination'] = preg_replace('/[^A-Z a-z]/', '', preg_replace(array("/(á|à|ã|â|ä)/", "/(Á|À|Ã|Â|Ä)/", "/(é|è|ê|ë)/", "/(É|È|Ê|Ë)/", "/(í|ì|î|ï)/", "/(Í|Ì|Î|Ï)/", "/(ó|ò|õ|ô|ö)/", "/(Ó|Ò|Õ|Ô|Ö)/", "/(ú|ù|û|ü)/", "/(Ú|Ù|Û|Ü)/", "/(ñ)/", "/(Ñ)/"), explode(" ", "a A e E i I o O u U n N"), $address->address1));
 		$postFields['address-number-destination'] = preg_replace('/[^0-9]/', '', $address->address1);
 		$postFields['complement-destination'] = "";
-		$postFields['district-destination'] = $address->address2;
+		$postFields['district-destination'] = $address->address2?:'Bairro não informado';
 
 		
 		$estados = State::getStates($langID, true);
@@ -757,7 +758,6 @@ class Freteclick extends CarrierModule
 		}		
 		$postFields['state-destination'] = $iso_estado;
 		$postFields['country-destination'] = "Brasil";
-		
 		$arrJson = Tools::jsonDecode($this->quote($postFields));
 
         if ($arrJson->response->success === false || $arrJson->response->data === false) {
@@ -766,7 +766,7 @@ class Freteclick extends CarrierModule
 		else{
 			$this->cookie->delivery_order_id = $arrJson->response->data->id;
 			$this->cookie->write();
-		}
+		}                                
         return $arrJson;
     }
 
