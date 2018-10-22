@@ -27,7 +27,7 @@ class FreteclickTransportadoraModuleFrontController extends ModuleFrontControlle
     {
         if ($this->module->cookie->quote_id) {
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $this->module->url_choose_quote . '?' . http_build_query(
+            curl_setopt($ch, CURLOPT_URL, $this->module->api_url . $this->module->url_choose_quote . '?' . http_build_query(
                 array(
                     'quote' => $this->module->cookie->quote_id,
                     'api-key' => Configuration::get('FC_API_KEY')
