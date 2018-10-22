@@ -719,6 +719,8 @@ class Freteclick extends CarrierModule
 					$arrJson->response->data->quote[$key]->raw_total = $quote->total;
                     $arrJson->response->data->quote[$key]->total = "R$ {$quote_price}";
                 }
+                
+                $this->cookie->fc_valorFrete = $arrJson->response->data->quote[0]->raw_total;						                
                 $this->cookie->write();
                 return Tools::jsonEncode($arrJson);
         } catch (Exception $ex) {
@@ -758,12 +760,13 @@ class Freteclick extends CarrierModule
 		}		
 		$postFields['state-destination'] = $iso_estado;
 		$postFields['country-destination'] = "Brasil";
-		$arrJson = Tools::jsonDecode($this->quote($postFields));
+		$arrJson = Tools::jsonDecode($this->orderByPrice($this->quote($postFields)));
 
         if ($arrJson->response->success === false || $arrJson->response->data === false) {
             $this->addError('Nenhuma transportadora disponível.');
         }
 		else{
+                        $this->cookie->fc_valorFrete = $arrJson->response->data->quote[0]->raw_total;
 			$this->cookie->delivery_order_id = $arrJson->response->data->id;
 			$this->cookie->write();
 		}                                
