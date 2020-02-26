@@ -65,7 +65,7 @@ class Freteclick extends CarrierModule
                 $this->warning = $this->l('The country origin field is required.');
             }
         }
-        $this->api_url = 'https://api.freteclick.com.br';
+        $this->api_url = 'https://app.freteclick.com.br';
         $this->url_shipping_quote = '/sales/shipping-quote.json';
         $this->url_city_origin = '/carrier/search-city-origin.json';
         $this->url_city_destination = '/carrier/search-city-destination.json';
